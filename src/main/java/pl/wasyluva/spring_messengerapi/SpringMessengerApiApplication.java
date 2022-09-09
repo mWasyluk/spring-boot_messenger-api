@@ -29,7 +29,7 @@ public class SpringMessengerApiApplication {
 	@Bean
 	public CommandLineRunner run() {
 		return (arg) -> {
-			UserDetails userDetails = new UserDetails("admin", "{bcrypt}$2a$12$DMm64rBiqoiI.gARFG5mJOBotWkrazCq.0v4iwQmgj4hmpQ010zcq", Arrays.asList(UserAuthority.USER, UserAuthority.ADMIN));
+			UserDetails userDetails = new UserDetails("admin", "{bcrypt}$2a$12$psbR2EBlOAXlmrlMCpmSj.Wg/28HjOqRrgsHE1Ud0WTEwiJr5AVZu", Arrays.asList(UserAuthority.USER, UserAuthority.ADMIN));
 			userRepository.save(userDetails);
 		};
 	}

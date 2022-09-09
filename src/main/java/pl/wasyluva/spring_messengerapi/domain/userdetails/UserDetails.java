@@ -20,8 +20,8 @@ public class UserDetails implements org.springframework.security.core.userdetail
     private String password;
     private String username;
 
-    @ElementCollection(targetClass = UserAuthority.class)
-    @JoinTable(name = "USERS_AUTHORITIES", joinColumns = @JoinColumn(name = "user_id"))
+    @ElementCollection(targetClass = UserAuthority.class, fetch = FetchType.EAGER)
+    @JoinTable(name = "AUTHORITIES", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "authority", nullable = false)
     @Enumerated(EnumType.STRING)
     private Collection<? extends GrantedAuthority> authorities;
