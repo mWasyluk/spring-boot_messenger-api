@@ -1,3 +1,5 @@
+# Work in progress!
+
 # Messenger API
 
 ## About
@@ -10,7 +12,7 @@ Following links will help you to look around interesting parts of the project in
   * [Data](https://github.com/mWasyluk/spring-boot_messenger-api/tree/main/src/main/java/pl/wasyluva/spring_messengerapi/data)
   * [Domains](https://github.com/mWasyluk/spring-boot_messenger-api/tree/main/src/main/java/pl/wasyluva/spring_messengerapi/domain)
   * [Security](https://github.com/mWasyluk/spring-boot_messenger-api/tree/main/src/main/java/pl/wasyluva/spring_messengerapi/security)
-  * [Web](https://github.com/mWasyluk/spring-boot_messenger-api/tree/main/src/main/java/pl/wasyluva/spring_messengerapi/web/controller)
+  * [Web](https://github.com/mWasyluk/spring-boot_messenger-api/tree/main/src/main/java/pl/wasyluva/spring_messengerapi/web)
 
 ## Dependencies
 The dependencies used to build and run the project are:
