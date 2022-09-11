@@ -15,19 +15,6 @@ public class SecurityConfig {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-//    @Bean
-//    public UserDetailsService jdbcUserDetailsService(DataSource dataSource) {
-//        String usersByUsernameQuery = "SELECT username, password, enabled FROM users WHERE username = ?";
-//        String authsByUsernameQuery = "SELECT username, authority FROM users_authorities WHERE username = ?";
-//
-//        JdbcUserDetailsManager usersManager = new JdbcUserDetailsManager(dataSource);
-//
-//        usersManager.setUsersByUsernameQuery (usersByUsernameQuery);
-//        usersManager.setAuthoritiesByUsernameQuery (authsByUsernameQuery);
-//
-//        return usersManager;
-//    }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
