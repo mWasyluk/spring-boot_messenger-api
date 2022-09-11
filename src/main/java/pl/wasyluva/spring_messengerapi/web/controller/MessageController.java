@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.wasyluva.spring_messengerapi.data.repository.MessageRepository;
-import pl.wasyluva.spring_messengerapi.data.repository.UserRepository;
+import pl.wasyluva.spring_messengerapi.data.repository.UserProfileRepository;
 import pl.wasyluva.spring_messengerapi.domain.message.Message;
 import pl.wasyluva.spring_messengerapi.domain.message.MessageState;
-import pl.wasyluva.spring_messengerapi.domain.userdetails.User;
+import pl.wasyluva.spring_messengerapi.domain.userdetails.UserProfile;
 
 import java.util.Date;
 import java.util.List;
@@ -20,7 +20,7 @@ import java.util.List;
 public class MessageController {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserProfileRepository userProfileRepository;
     @Autowired
     private MessageRepository messageRepository;
 
@@ -31,7 +31,7 @@ public class MessageController {
 
     @GetMapping("/send")
     public ResponseEntity<Message> sendTestMessageByUserId(){
-        List<User> all = userRepository.findAll();
+        List<UserProfile> all = userProfileRepository.findAll();
         Message save = messageRepository.save(new Message(all.get(0), all.get(1), "Hello, World!"));
         save.addNextDate(new Date());
         return new ResponseEntity<>( save , HttpStatus.OK);

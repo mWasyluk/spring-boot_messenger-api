@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
-import pl.wasyluva.spring_messengerapi.domain.userdetails.User;
+import pl.wasyluva.spring_messengerapi.domain.userdetails.UserProfile;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -27,11 +27,11 @@ public class Message implements Comparable<Message> {
 
     @NotNull
     @ManyToOne //TODO
-    private User sourceUser;
+    private UserProfile sourceUser;
 
     @NotNull
     @ManyToOne //TODO
-    private User targetUser;
+    private UserProfile targetUser;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date sentDate;
@@ -45,7 +45,7 @@ public class Message implements Comparable<Message> {
     @NotNull
     private String content;
 
-    public Message(User sourceUser, User targetUser, String content) {
+    public Message(UserProfile sourceUser, UserProfile targetUser, String content) {
         this.sourceUser = sourceUser;
         this.targetUser = targetUser;
         this.content = content;
