@@ -1,19 +1,23 @@
 package pl.wasyluva.spring_messengerapi.web.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 import pl.wasyluva.spring_messengerapi.data.repository.MessageRepository;
 import pl.wasyluva.spring_messengerapi.data.repository.UserProfileRepository;
 import pl.wasyluva.spring_messengerapi.domain.message.Message;
-import pl.wasyluva.spring_messengerapi.domain.message.MessageState;
+import pl.wasyluva.spring_messengerapi.domain.userdetails.UserDetails;
 import pl.wasyluva.spring_messengerapi.domain.userdetails.UserProfile;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Slf4j
 
 @RestController
 @RequestMapping("/messages")
@@ -29,23 +33,61 @@ public class MessageController {
         return new ResponseEntity<>(messageRepository.findAll(), HttpStatus.OK);
     }
 
-    @GetMapping("/send")
-    public ResponseEntity<Message> sendTestMessageByUserId(){
-        List<UserProfile> all = userProfileRepository.findAll();
-        Message save = messageRepository.save(new Message(all.get(0), all.get(1), "Hello, World!"));
-        save.addNextDate(new Date());
-        return new ResponseEntity<>( save , HttpStatus.OK);
+    @PostMapping("/send/{targetUserIdAsString}")
+    public ResponseEntity<Message> sendMessageToUserByUserId(Authentication authentication, @PathVariable String targetUserIdAsString, @RequestBody Message.TempMessage message){
+
+        UUID sourceUserId = ((UserDetails) authentication.getPrincipal()).getId();
+        UUID targetUserId = UUID.fromString(targetUserIdAsString);
+
+        Optional<UserProfile> userById = userProfileRepository.findById(targetUserId);
+        if (!userById.isPresent()) {
+            log.error("Message sending failure: " +
+                    "\nTarget user with id " + targetUserId + " does not exist.");
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        Message messageToPersist = new Message(sourceUserId, targetUserId, message);
+        messageToPersist.setSentDate(new Date());
+        Message savedMessage = messageRepository.save(messageToPersist);
+
+        log.info("New message persisted: " +
+                "\n" + savedMessage);
+
+        return new ResponseEntity<>(savedMessage, HttpStatus.OK);
     }
 
-    @GetMapping("/update")
-    public ResponseEntity<Message> updateMessageDate(){
-        List<Message> all = messageRepository.findAll();
-        if (!all.isEmpty() && all.get(0).getMessageState() != MessageState.READ) {
-            Message message = all.get(0);
-            message.addNextDate(new Date());
-            return new ResponseEntity<>(messageRepository.save(message), HttpStatus.OK);
+    @PatchMapping("/update")
+    /* TODO: Create a MessageChange domain that contains information about the type of change and the change itself
+*            Swap the class required by the method below with the new domain class  */
+    public ResponseEntity<Message> updateMessage(Authentication authentication, @RequestBody Message messageUpdate){
+        log.info("Received updated message:" +
+                "\n" + messageUpdate);
+
+        UUID sourceUserId = ((UserDetails) authentication.getPrincipal()).getId();
+
+        Optional<Message> optionalMessage = messageRepository.findById(messageUpdate.getId());
+
+        if (optionalMessage.isPresent()){
+
+            Message messageById = optionalMessage.get();
+
+            if (!sourceUserId.equals(messageById.getSourceUserId())) {
+                log.error("Message updating failure: \n" +
+                        "Message source user id " + messageById.getSourceUserId() + " is different than logged in user id " + sourceUserId);
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+
+            if (messageUpdate.getContent() != null) messageById.setContent(messageUpdate.getContent());
+            if (messageUpdate.getSentDate() != null && messageById.getSentDate() == null) messageById.setSentDate(messageUpdate.getSentDate());
+            if (messageUpdate.getDeliveryDate() != null && messageById.getDeliveryDate() == null) messageById.setDeliveryDate(messageUpdate.getDeliveryDate());
+            if (messageUpdate.getReadDate() != null && messageById.getReadDate() == null) messageById.setReadDate(messageUpdate.getReadDate());
+
+            Message savedMessage = messageRepository.save(messageById);
+
+            return new ResponseEntity<>(savedMessage, HttpStatus.OK);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        log.error("Message updating failure: \n" +
+                "Message with id " + messageUpdate.getId() + " does not exist.");
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     // TODO: Find messages only for an actual Principal + Find messages by a second User ID as a request parameter

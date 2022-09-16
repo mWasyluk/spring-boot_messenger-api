@@ -1,12 +1,10 @@
 package pl.wasyluva.spring_messengerapi.domain.message;
 
 import com.sun.istack.NotNull;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
-import pl.wasyluva.spring_messengerapi.domain.userdetails.UserProfile;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -14,7 +12,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Data
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
 @AllArgsConstructor
 
 @Entity
@@ -25,13 +23,9 @@ public class Message implements Comparable<Message> {
     @GenericGenerator(name = "messages_uuid_generator", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID id;
 
-    @NotNull
-    @ManyToOne //TODO
-    private UserProfile sourceUser;
+    private UUID sourceUserId;
 
-    @NotNull
-    @ManyToOne //TODO
-    private UserProfile targetUser;
+    private UUID targetUserId;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date sentDate;
@@ -45,10 +39,10 @@ public class Message implements Comparable<Message> {
     @NotNull
     private String content;
 
-    public Message(UserProfile sourceUser, UserProfile targetUser, String content) {
-        this.sourceUser = sourceUser;
-        this.targetUser = targetUser;
-        this.content = content;
+    public Message(UUID sourceUserId, UUID targetUserId, TempMessage tempMessage) {
+        this.sourceUserId = sourceUserId;
+        this.targetUserId = targetUserId;
+        this.content = tempMessage.getContent();
     }
 
     public MessageState getMessageState(){
@@ -56,27 +50,6 @@ public class Message implements Comparable<Message> {
                 deliveryDate == null ? MessageState.NOT_DELIVERED :
                 readDate == null ? MessageState.NOT_READ :
                 MessageState.READ;
-    }
-
-    public void addNextDate(Date date) {
-        MessageState messageState = this.getMessageState();
-
-        if (messageState != null) {
-            switch (messageState) {
-                case NOT_DELIVERED: {
-                    this.setDeliveryDate(date);
-                    break;
-                }
-                case NOT_SENT: {
-                    this.setSentDate(date);
-                    break;
-                }
-                case NOT_READ: {
-                    this.setReadDate(date);
-                    break;
-                }
-            }
-        }
     }
 
     @Override
@@ -89,12 +62,35 @@ public class Message implements Comparable<Message> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Message message = (Message) o;
-        return Objects.equals(id, message.id) && Objects.equals(sourceUser, message.sourceUser) && Objects.equals(targetUser, message.targetUser) && Objects.equals(content, message.content);
+        return Objects.equals(id, message.id) && Objects.equals(sourceUserId, message.sourceUserId) && Objects.equals(targetUserId, message.targetUserId) && Objects.equals(content, message.content);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, sourceUser, targetUser, content);
+        return Objects.hash(id, sourceUserId, targetUserId, content);
+    }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", sourceUserId=" + sourceUserId +
+                ", targetUserId=" + targetUserId +
+                ", sentDate=" + sentDate +
+                ", deliveryDate=" + deliveryDate +
+                ", readDate=" + readDate +
+                ", content='" + content + '\'' +
+                '}';
+    }
+
+    @Data
+    @NoArgsConstructor
+    public static class TempMessage{
+        private String content;
+
+        public TempMessage(String content) {
+            this.content = content;
+        }
     }
 }
 

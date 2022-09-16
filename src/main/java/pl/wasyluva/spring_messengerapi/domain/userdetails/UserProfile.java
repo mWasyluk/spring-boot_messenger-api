@@ -5,7 +5,6 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
 import pl.wasyluva.spring_messengerapi.domain.message.Message;
 import pl.wasyluva.spring_messengerapi.domain.message.MessageState;
 
@@ -21,8 +20,8 @@ import java.util.*;
 public class UserProfile implements ChatUser {
 
     @Id
-    @GeneratedValue(generator = "user_id_generator")
-    @GenericGenerator(name = "user_id_generator", strategy = "org.hibernate.id.UUIDGenerator")
+//    @GeneratedValue(generator = "user_id_generator")
+//    @GenericGenerator(name = "user_id_generator", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID id;
 
     private String firstName;
@@ -39,7 +38,8 @@ public class UserProfile implements ChatUser {
     @ManyToMany(targetEntity = pl.wasyluva.spring_messengerapi.domain.message.Message.class) //TODO
     private Set<Message> messages = new TreeSet<>();
 
-    public UserProfile(String firstName, String lastName, Date birthDate) {
+    public UserProfile(UUID userDetailsId, String firstName, String lastName, Date birthDate) {
+        this.id = userDetailsId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.birthDate = birthDate;
@@ -66,7 +66,7 @@ public class UserProfile implements ChatUser {
     public Optional<TreeSet<Message>> getMessagesByUserId(@NotNull UUID userId) {
         TreeSet<Message> messagesWithUser = new TreeSet<>();
         for (Message next : messages) {
-            if (next.getTargetUser().getId() == userId || next.getSourceUser().getId() == userId) messagesWithUser.add(next);
+            if (next.getTargetUserId().equals(userId) || next.getSourceUserId().equals(userId)) messagesWithUser.add(next);
         }
         return !messagesWithUser.isEmpty() ? Optional.of(messagesWithUser) : Optional.empty();
     }
