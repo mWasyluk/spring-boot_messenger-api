@@ -1,25 +1,39 @@
 package pl.wasyluva.spring_messengerapi.domain.userdetails;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import pl.wasyluva.spring_messengerapi.domain.serializer.AccountDeserializer;
 
 import javax.persistence.*;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.UUID;
 
 @Data
 @NoArgsConstructor
+@JsonDeserialize(using = AccountDeserializer.class)
 
 @Entity
+// TODO: Change to "accounts" and update the default query in AuthenticationProvider
 @Table(name = "USERS")
 public class Account implements UserDetails {
     @Id
     private UUID id = UUID.randomUUID();
 
+    @Column(unique = true)
+    private String email;
     private String password;
-    private String username;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "profile_id", unique = true)
+    @JsonIgnoreProperties("account")
+    private Profile profile;
 
     @ElementCollection(targetClass = UserAuthority.class, fetch = FetchType.EAGER)
     @JoinTable(name = "AUTHORITIES", joinColumns = @JoinColumn(name = "user_id"))
@@ -32,8 +46,12 @@ public class Account implements UserDetails {
     private boolean credentialsNonExpired;
     private boolean enabled;
 
-    public Account(String username, String password, Collection<? extends GrantedAuthority> authorities) {
-        this.username = username;
+    public Account(@NonNull String email, @NonNull String password) {
+        this(email, password, Collections.singleton(UserAuthority.USER));
+    }
+
+    public Account(@NonNull String email, @NonNull String password, @NonNull Collection<? extends GrantedAuthority> authorities) {
+        this.email = email;
         this.password = password;
         this.authorities = authorities;
         this.accountNonExpired = true;
@@ -42,24 +60,15 @@ public class Account implements UserDetails {
         this.enabled = true;
     }
 
-    public Account(String username, String password, Collection<? extends GrantedAuthority> authorities, boolean accountNonExpired, boolean accountNonLocked, boolean credentialsNonExpired, boolean enabled) {
-        this.username = username;
-        this.password = password;
-        this.authorities = authorities;
-        this.accountNonExpired = accountNonExpired;
-        this.accountNonLocked = accountNonLocked;
-        this.credentialsNonExpired = credentialsNonExpired;
-        this.enabled = enabled;
-    }
-
     @Override
     public String getPassword() {
         return this.password;
     }
 
     @Override
+    @JsonIgnore
     public String getUsername() {
-        return this.username;
+        return this.email;
     }
 
     @Override
