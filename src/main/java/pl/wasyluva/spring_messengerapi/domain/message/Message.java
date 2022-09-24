@@ -18,6 +18,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "messages")
 public class Message implements Comparable<Message> {
+    // TODO: Persist messages in Document database (MongoDB)
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "messages_uuid_generator")
     @GenericGenerator(name = "messages_uuid_generator", strategy = "org.hibernate.id.UUIDGenerator")
