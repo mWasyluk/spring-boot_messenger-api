@@ -3,6 +3,7 @@ package pl.wasyluva.spring_messengerapi.domain.userdetails;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.util.Collection;
@@ -13,7 +14,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "USERS")
-public class UserDetails implements org.springframework.security.core.userdetails.UserDetails {
+public class Account implements UserDetails {
     @Id
     private UUID id = UUID.randomUUID();
 
@@ -31,7 +32,7 @@ public class UserDetails implements org.springframework.security.core.userdetail
     private boolean credentialsNonExpired;
     private boolean enabled;
 
-    public UserDetails(String username, String password, Collection<? extends GrantedAuthority> authorities) {
+    public Account(String username, String password, Collection<? extends GrantedAuthority> authorities) {
         this.username = username;
         this.password = password;
         this.authorities = authorities;
@@ -41,7 +42,7 @@ public class UserDetails implements org.springframework.security.core.userdetail
         this.enabled = true;
     }
 
-    public UserDetails(String username, String password, Collection<? extends GrantedAuthority> authorities, boolean accountNonExpired, boolean accountNonLocked, boolean credentialsNonExpired, boolean enabled) {
+    public Account(String username, String password, Collection<? extends GrantedAuthority> authorities, boolean accountNonExpired, boolean accountNonLocked, boolean credentialsNonExpired, boolean enabled) {
         this.username = username;
         this.password = password;
         this.authorities = authorities;

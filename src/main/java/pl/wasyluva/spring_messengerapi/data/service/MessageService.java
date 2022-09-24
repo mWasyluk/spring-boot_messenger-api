@@ -7,9 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.wasyluva.spring_messengerapi.data.repository.MessageRepository;
-import pl.wasyluva.spring_messengerapi.data.repository.UserProfileRepository;
+import pl.wasyluva.spring_messengerapi.data.repository.ProfileRepository;
 import pl.wasyluva.spring_messengerapi.domain.message.Message;
-import pl.wasyluva.spring_messengerapi.domain.userdetails.UserProfile;
+import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +22,7 @@ public class MessageService {
     @Autowired
     private MessageRepository messageRepository;
     @Autowired
-    private UserProfileRepository userProfileRepository;
+    private ProfileRepository profileRepository;
 
     public ResponseEntity<List<Message>> getAllPersistedMessages(){
         return new ResponseEntity<>(messageRepository.findAll(), HttpStatus.OK);
@@ -37,7 +37,7 @@ public class MessageService {
             }
         }
 
-        Optional<UserProfile> targetUserById = userProfileRepository.findById(messageToSave.getTargetUserId());
+        Optional<Profile> targetUserById = profileRepository.findById(messageToSave.getTargetUserId());
         if (!targetUserById.isPresent()) {
             log.debug("User with ID " + messageToSave.getTargetUserId() + " does not exist");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

@@ -3,8 +3,8 @@ package pl.wasyluva.spring_messengerapi.data.service;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import pl.wasyluva.spring_messengerapi.data.repository.UserProfileRepository;
-import pl.wasyluva.spring_messengerapi.domain.userdetails.UserProfile;
+import pl.wasyluva.spring_messengerapi.data.repository.ProfileRepository;
+import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,44 +12,44 @@ import java.util.UUID;
 
 @Service
 @Slf4j
-public class UserProfileService {
-    private final UserProfileRepository userProfileRepository;
+public class ProfileService {
+    private final ProfileRepository profileRepository;
 
-    public UserProfileService(UserProfileRepository userProfileRepository) {
-        this.userProfileRepository = userProfileRepository;
+    public ProfileService(ProfileRepository profileRepository) {
+        this.profileRepository = profileRepository;
     }
 
     // TODO: Return snips of profiles objects (DTO)
-    public List<UserProfile> getAllUserProfiles(){
-        return userProfileRepository.findAll();
+    public List<Profile> getAllProfiles(){
+        return profileRepository.findAll();
     }
 
 
     // TODO: Add a requestingUser parameter to the method and check if he is on 'friend list'
     //  if true -> return a full object
     //  if false -> return a snip of the object (DTO)
-    public UserProfile getUserProfileById(@NonNull UUID userId){
-        return userProfileRepository.findById(userId).orElse(null);
+    public Profile getProfileById(@NonNull UUID userId){
+        return profileRepository.findById(userId).orElse(null);
     }
 
     // TODO: Add a requestingUser parameter to the method and check if he is the owner of the profile
-    public UserProfile updateUserProfile(@NonNull UserProfile updatedUserProfile){
-        if (updatedUserProfile.getId() == null){
+    public Profile updateProfile(@NonNull Profile updatedProfile){
+        if (updatedProfile.getId() == null){
             log.debug("UserProfile provided as updated has to have an ID");
             return null;
         }
-        Optional<UserProfile> byId = userProfileRepository.findById(updatedUserProfile.getId());
+        Optional<Profile> byId = profileRepository.findById(updatedProfile.getId());
         if (!byId.isPresent()) {
-            log.debug("UserProfile with ID " + updatedUserProfile.getId() + " does not exist");
+            log.debug("UserProfile with ID " + updatedProfile.getId() + " does not exist");
             return null;
         }
-        UserProfile toPersistUserProfile = updateAllUserProfileFields(byId.get(), updatedUserProfile);
+        Profile toPersistProfile = updateAllProfileFields(byId.get(), updatedProfile);
 
         log.debug("Profile updated");
-        return userProfileRepository.save(toPersistUserProfile);
+        return profileRepository.save(toPersistProfile);
     }
 
-    private UserProfile updateAllUserProfileFields(UserProfile oldState, UserProfile updatedState){
+    private Profile updateAllProfileFields(Profile oldState, Profile updatedState){
         if (updatedState.getAvatar() != null){
             oldState.setAvatar(updatedState.getAvatar());
         } if (updatedState.getFirstName() != null) {

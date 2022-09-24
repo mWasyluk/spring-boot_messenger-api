@@ -8,7 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import pl.wasyluva.spring_messengerapi.data.service.MessageService;
 import pl.wasyluva.spring_messengerapi.domain.message.Message;
-import pl.wasyluva.spring_messengerapi.domain.userdetails.UserDetails;
+import pl.wasyluva.spring_messengerapi.domain.userdetails.Account;
 
 import java.util.Date;
 import java.util.List;
@@ -26,7 +26,7 @@ public class MessageController {
 
     private UUID getPrincipalId(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return ((UserDetails) authentication.getPrincipal()).getId();
+        return ((Account) authentication.getPrincipal()).getId();
     }
 
     @GetMapping
