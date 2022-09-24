@@ -1,16 +1,11 @@
 package pl.wasyluva.spring_messengerapi.data.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.AssertionsForClassTypes;
-import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import pl.wasyluva.spring_messengerapi.domain.message.Message;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 

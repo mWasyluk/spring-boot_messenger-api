@@ -1,6 +1,9 @@
 package pl.wasyluva.spring_messengerapi.data.service;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -12,7 +15,9 @@ import pl.wasyluva.spring_messengerapi.data.repository.ProfileRepository;
 import pl.wasyluva.spring_messengerapi.domain.message.Message;
 import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
 
-import java.util.*;
+import java.util.Date;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -50,9 +55,9 @@ class MessageServiceTest {
         testMessage = new Message(persistedUserId1, persistedUserId2, new Message.TempMessage("Test message"));
 
         lenient().when(profileRepository.findById(persistedUserId1))
-                .thenReturn( Optional.of(new Profile(persistedUserId1, "test", "test", new Date())));
+                .thenReturn( Optional.of(new Profile("test", "test", new Date())));
         lenient().when(profileRepository.findById(persistedUserId2))
-                .thenReturn( Optional.of(new Profile(persistedUserId2, "test", "test", new Date())));
+                .thenReturn( Optional.of(new Profile("test", "test", new Date())));
     }
 
     @Nested
