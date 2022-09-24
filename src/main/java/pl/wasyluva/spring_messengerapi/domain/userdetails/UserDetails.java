@@ -20,6 +20,10 @@ public class UserDetails implements org.springframework.security.core.userdetail
     private String password;
     private String username;
 
+    //TODO: Attach UserProfile to UserDetails
+//    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+//    private UserProfile userProfile;
+
     @ElementCollection(targetClass = UserAuthority.class, fetch = FetchType.EAGER)
     @JoinTable(name = "AUTHORITIES", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "authority", nullable = false)
