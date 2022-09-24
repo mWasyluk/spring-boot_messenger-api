@@ -3,8 +3,8 @@ package pl.wasyluva.spring_messengerapi.web.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.wasyluva.spring_messengerapi.data.service.UserProfileService;
-import pl.wasyluva.spring_messengerapi.domain.userdetails.UserProfile;
+import pl.wasyluva.spring_messengerapi.data.service.ProfileService;
+import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -15,37 +15,37 @@ import java.util.UUID;
 public class UserProfileController {
     // TODO: Return more self-descriptive HTTP status codes
 
-    private final UserProfileService userProfileService;
+    private final ProfileService profileService;
 
-    public UserProfileController(UserProfileService userProfileService) {
-        this.userProfileService = userProfileService;
+    public UserProfileController(ProfileService profileService) {
+        this.profileService = profileService;
     }
 
     @GetMapping
-    public ResponseEntity<List<UserProfile>> getAllUserProfiles(){
-        return new ResponseEntity<>(userProfileService.getAllUserProfiles(), HttpStatus.OK);
+    public ResponseEntity<List<Profile>> getAllUserProfiles(){
+        return new ResponseEntity<>(profileService.getAllProfiles(), HttpStatus.OK);
     }
 
     @GetMapping(value = "/{userUuid}")
-    public ResponseEntity<UserProfile> getUserProfileByUserId(@PathVariable String userUuid){
+    public ResponseEntity<Profile> getUserProfileByUserId(@PathVariable String userUuid){
         try {
             UUID.fromString(userUuid);
         } catch (Exception e){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        UserProfile userProfileById = userProfileService.getUserProfileById(UUID.fromString(userUuid));
+        Profile profileById = profileService.getProfileById(UUID.fromString(userUuid));
 
-        return userProfileById != null ?
-                new ResponseEntity<>(userProfileById, HttpStatus.OK) :
+        return profileById != null ?
+                new ResponseEntity<>(profileById, HttpStatus.OK) :
                 new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<UserProfile> updateUserProfile(@RequestBody UserProfile userProfile, HttpServletRequest request){
-        UserProfile updatedUserProfile = userProfileService.updateUserProfile(userProfile);
-        return updatedUserProfile != null ?
-                new ResponseEntity<>(updatedUserProfile, HttpStatus.OK) :
+    public ResponseEntity<Profile> updateUserProfile(@RequestBody Profile profile, HttpServletRequest request){
+        Profile updatedProfile = profileService.updateProfile(profile);
+        return updatedProfile != null ?
+                new ResponseEntity<>(updatedProfile, HttpStatus.OK) :
                 new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }

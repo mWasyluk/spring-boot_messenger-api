@@ -2,10 +2,10 @@ package pl.wasyluva.spring_messengerapi.data.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import pl.wasyluva.spring_messengerapi.domain.userdetails.UserProfile;
+import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
 
 import java.util.UUID;
 
 @Repository
-public interface UserProfileRepository extends JpaRepository<UserProfile, UUID> {
+public interface ProfileRepository extends JpaRepository<Profile, UUID> {
 }

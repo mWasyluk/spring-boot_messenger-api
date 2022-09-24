@@ -19,7 +19,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "avatars")
-public class UserAvatar {
+public class ProfileAvatar {
 
     @Id
     @GeneratedValue(generator = "avatar_id_generator")
@@ -29,7 +29,7 @@ public class UserAvatar {
     @NotNull
     private String imageUrl;
 
-    public UserAvatar(String imageUrl) {
+    public ProfileAvatar(String imageUrl) {
         this.imageUrl = imageUrl;
     }
 }

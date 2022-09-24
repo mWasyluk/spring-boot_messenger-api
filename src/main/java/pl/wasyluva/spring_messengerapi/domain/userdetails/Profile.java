@@ -17,7 +17,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "user_profiles")
-public class UserProfile implements ChatUser {
+public class Profile implements ChatUser {
 
     @Id
 //    @GeneratedValue(generator = "user_id_generator")
@@ -30,7 +30,7 @@ public class UserProfile implements ChatUser {
 
     @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
     @JoinColumn(name = "avatar_id", referencedColumnName = "id", nullable = false)
-    private UserAvatar avatar = new UserAvatar("http://localhost:8080/messenger/api/images/avatars/default");
+    private ProfileAvatar avatar = new ProfileAvatar("http://localhost:8080/messenger/api/images/avatars/default");
 
     @Temporal(TemporalType.DATE)
     private Date birthDate;
@@ -38,14 +38,14 @@ public class UserProfile implements ChatUser {
     @ManyToMany(targetEntity = pl.wasyluva.spring_messengerapi.domain.message.Message.class) //TODO
     private Set<Message> messages = new TreeSet<>();
 
-    public UserProfile(UUID userDetailsId, String firstName, String lastName, Date birthDate) {
+    public Profile(UUID userDetailsId, String firstName, String lastName, Date birthDate) {
         this.id = userDetailsId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.birthDate = birthDate;
     }
 
-    public UserAvatar getAvatar() {
+    public ProfileAvatar getAvatar() {
         if (this.avatar == null)
             return null; //TODO: return a default avatar if no one set.
         return avatar;

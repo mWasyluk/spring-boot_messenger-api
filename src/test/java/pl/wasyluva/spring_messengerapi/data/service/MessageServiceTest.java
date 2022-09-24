@@ -4,15 +4,13 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pl.wasyluva.spring_messengerapi.data.repository.MessageRepository;
-import pl.wasyluva.spring_messengerapi.data.repository.UserProfileRepository;
+import pl.wasyluva.spring_messengerapi.data.repository.ProfileRepository;
 import pl.wasyluva.spring_messengerapi.domain.message.Message;
-import pl.wasyluva.spring_messengerapi.domain.userdetails.UserProfile;
+import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
 
 import java.util.*;
 
@@ -25,7 +23,7 @@ class MessageServiceTest {
     @Mock
     private MessageRepository messageRepository;
     @Mock
-    private UserProfileRepository userProfileRepository;
+    private ProfileRepository profileRepository;
     @InjectMocks
     private MessageService messageService;
 
@@ -51,10 +49,10 @@ class MessageServiceTest {
         persistedUserId2 = UUID.randomUUID();
         testMessage = new Message(persistedUserId1, persistedUserId2, new Message.TempMessage("Test message"));
 
-        lenient().when(userProfileRepository.findById(persistedUserId1))
-                .thenReturn( Optional.of(new UserProfile(persistedUserId1, "test", "test", new Date())));
-        lenient().when(userProfileRepository.findById(persistedUserId2))
-                .thenReturn( Optional.of(new UserProfile(persistedUserId2, "test", "test", new Date())));
+        lenient().when(profileRepository.findById(persistedUserId1))
+                .thenReturn( Optional.of(new Profile(persistedUserId1, "test", "test", new Date())));
+        lenient().when(profileRepository.findById(persistedUserId2))
+                .thenReturn( Optional.of(new Profile(persistedUserId2, "test", "test", new Date())));
     }
 
     @Nested
