@@ -6,16 +6,21 @@
 The Messenger API is a REST API that provides endpoints which are used to perform CRUD operations on chat users and theirs messages.
 
 ## Available endpoint
-The API provides endpoints that are handful to reach the expected result. Those are:
-* [Messages](https://github.com/mWasyluk/spring-boot_messenger-api/blob/main/src/main/java/pl/wasyluva/spring_messengerapi/web/controller/MessageController.java)
-  * GET - /messages/ - returns all persisted messages (insecure)
-  * POST - /messages/send/{userUUID} - persists new message
-  * PATCH - /messages/update/ - updates state of message if provided message UUID matches the persisted one
+The API provides endpoints that are handful to reach the expected resoult. Those are:
+* [Accounts](https://github.com/mWasyluk/spring-boot_messenger-api/blob/account-registration/src/main/java/pl/wasyluva/spring_messengerapi/web/controller/AccountController.java)
+  * GET - /accounts - returns all persisted Accounts (insecure)
+  * POST - /accounts/register - registers a new Account
 * [Profiles](https://github.com/mWasyluk/spring-boot_messenger-api/blob/main/src/main/java/pl/wasyluva/spring_messengerapi/web/controller/UserProfileController.java)
-  * GET - /profiles/ - returns all persisted profiles (insecure)
-  * GET - /profiles/{userUUID} - returns persisted profile with provided UUID
-  * PATCH - /profiles/update - updates state of profile if provided profile UUID matches the persisted one
-
+  * GET - /profiles - returns all persisted Profiles (insecure)
+  * GET - /profiles/{userUUID} - returns a Profile with the given UUID
+  * POST - /profiles/create - creates a new Profile and assigns it to the Account
+  * PATCH - /profiles/update - updates the Profile
+* [Messages](https://github.com/mWasyluk/spring-boot_messenger-api/blob/main/src/main/java/pl/wasyluva/spring_messengerapi/web/controller/MessageController.java)
+  * GET - /messages - returns all persisted Messages (insecure)
+  * POST - /messages/send/{userUUID} - persists a new Message
+  * PATCH - /messages/update - updates the Message
+  * DELETE - /delete/{messageUUID} - deletes the Message
+  
 ## Contents
 Following links will help you to look around interesting parts of the project in a snap:
 * [Properties](https://github.com/mWasyluk/spring-boot_messenger-api/blob/main/src/main/resources/application.properties)
