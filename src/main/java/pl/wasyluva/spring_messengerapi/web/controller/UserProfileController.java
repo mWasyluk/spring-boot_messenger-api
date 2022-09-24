@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import pl.wasyluva.spring_messengerapi.data.service.ProfileService;
 import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,9 +15,11 @@ public class UserProfileController {
     // TODO: Return more self-descriptive HTTP status codes
 
     private final ProfileService profileService;
+    private final PrincipalService principalService;
 
-    public UserProfileController(ProfileService profileService) {
+    public UserProfileController(ProfileService profileService, PrincipalService principalService) {
         this.profileService = profileService;
+        this.principalService = principalService;
     }
 
     @GetMapping
@@ -41,8 +42,16 @@ public class UserProfileController {
                 new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @PostMapping("/create")
+    public ResponseEntity<Profile> createProfile(@RequestBody Profile newProfile){
+        Profile profile = this.profileService.createProfile(principalService.getPrincipalAccountId(), newProfile);
+        return profile != null ?
+                new ResponseEntity<>(profile, HttpStatus.OK) :
+                new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
     @PatchMapping("/update")
-    public ResponseEntity<Profile> updateUserProfile(@RequestBody Profile profile, HttpServletRequest request){
+    public ResponseEntity<Profile> updateUserProfile(@RequestBody Profile profile){
         Profile updatedProfile = profileService.updateProfile(profile);
         return updatedProfile != null ?
                 new ResponseEntity<>(updatedProfile, HttpStatus.OK) :
