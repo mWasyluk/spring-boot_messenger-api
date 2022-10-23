@@ -16,11 +16,9 @@ public class AccountController {
     //  The method should be secured with IP and user authorities check (whitelisted IP and 'ADMIN' authority)
 
     private final AccountService accountService;
-    private final PasswordEncoder passwordEncoder;
 
-    public AccountController(AccountService accountService, PasswordEncoder passwordEncoder) {
+    public AccountController(AccountService accountService) {
         this.accountService = accountService;
-        this.passwordEncoder = passwordEncoder;
     }
 
     // TODO: Remove after tests

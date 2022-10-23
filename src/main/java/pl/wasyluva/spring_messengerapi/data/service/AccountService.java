@@ -32,8 +32,13 @@ public class AccountService implements UserDetailsService {
 
     @Override
     public Account loadUserByUsername(String username) throws UsernameNotFoundException {
-        return accountRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Username '" + username + "' could not be found."));
+        Optional<Account> byEmail = accountRepository.findByEmail(username);
+        if (!byEmail.isPresent()){
+            log.debug("Account with email " + username + " does not exist");
+            throw new UsernameNotFoundException("Account with email " + username + " could not be found.");
+        }
+        log.debug("Account with email " + username + " has been loaded");
+        return byEmail.get();
     }
 
     public Account createUserAccount(@NonNull Account account){
@@ -56,5 +61,7 @@ public class AccountService implements UserDetailsService {
 
         return accountRepository.save(newAccount);
     }
+
+    // TODO: Add method createAdminAccount()
 
 }
