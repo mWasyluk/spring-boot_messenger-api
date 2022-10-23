@@ -50,6 +50,8 @@ public class ProfileService {
 
         Account account = byId.get();
         account.setProfile(profile);
+
+        log.debug("Account with ID " + accountId + " has now Profile with ID " + profile.getId() + " assigned");
         return accountRepository.save(account).getProfile();
     }
 

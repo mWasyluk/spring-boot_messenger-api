@@ -29,8 +29,8 @@ public class Profile {
     private Account account;
 
     @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
-    @JoinColumn(name = "avatar_id", referencedColumnName = "id", nullable = false)
-    private ProfileAvatar avatar = ProfileAvatar.DEFAULT_AVATAR;
+    @JoinColumn(name = "avatar_id", referencedColumnName = "id")
+    private ProfileAvatar avatar = null;
 
     @Temporal(TemporalType.DATE)
     private Date birthDate;
@@ -43,7 +43,7 @@ public class Profile {
 
     public ProfileAvatar getAvatar() {
         if (this.avatar == null)
-            return null; //TODO: return a default avatar if no one set.
+            return ProfileAvatar.DEFAULT_AVATAR;
         return avatar;
     }
 }

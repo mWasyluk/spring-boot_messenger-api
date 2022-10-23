@@ -33,40 +33,44 @@ public class SpringMessengerApiApplication {
 	@Bean
 	public CommandLineRunner run() {
 		return (arg) -> {
-			// Create and persist sample Accounts
-			Account account1 = new Account(
-					"admin",
-					"{bcrypt}$2a$12$psbR2EBlOAXlmrlMCpmSj.Wg/28HjOqRrgsHE1Ud0WTEwiJr5AVZu",
-					Arrays.asList(UserAuthority.USER, UserAuthority.ADMIN));
-			Account account2 = new Account(
-					"user",
-					"{bcrypt}$2a$12$psbR2EBlOAXlmrlMCpmSj.Wg/28HjOqRrgsHE1Ud0WTEwiJr5AVZu",
-					Collections.singletonList(UserAuthority.USER));
+			if (accountRepository.findAll().stream().noneMatch((account ->
+				account.getUsername().equals("admin") || account.getUsername().equals("user")
+			))) {
+				// Create and persist sample Accounts
+				Account account1 = new Account(
+						"admin",
+						"{bcrypt}$2a$12$psbR2EBlOAXlmrlMCpmSj.Wg/28HjOqRrgsHE1Ud0WTEwiJr5AVZu",
+						Arrays.asList(UserAuthority.USER, UserAuthority.ADMIN));
+				Account account2 = new Account(
+						"user",
+						"{bcrypt}$2a$12$psbR2EBlOAXlmrlMCpmSj.Wg/28HjOqRrgsHE1Ud0WTEwiJr5AVZu",
+						Collections.singletonList(UserAuthority.USER));
+//
+//			Account savedUser1 = accountRepository.save(account1);
+//			Account savedUser2 = accountRepository.save(account2);
+//
+//			log.info("Persisted Account with ID " + savedUser1.getId());
+//			log.info("Persisted Account with ID " + savedUser2.getId());
 
-			Account savedUser1 = accountRepository.save(account1);
-			Account savedUser2 = accountRepository.save(account2);
+				// Create sample Profiles, assign them to Accounts and persist
+				Profile profile1 = new Profile(
+						"Marek",
+						"Wasyluk",
+						new Calendar.Builder().setDate(1999, 5, 16).build().getTime());
+				Profile profile2 = new Profile(
+						"Jan",
+						"Pasieka",
+						new Calendar.Builder().setDate(1995, 3, 28).build().getTime());
 
-			log.info("Persisted Account with ID " + savedUser1.getId());
-			log.info("Persisted Account with ID " + savedUser2.getId());
+				account1.setProfile(profile1);
+				account2.setProfile(profile2);
 
-			// Create sample Profiles, assign them to Accounts and persist
-			Profile profile1 = new Profile(
-					"Marek",
-					"Wasyluk",
-					new Calendar.Builder().setDate(1999, 5, 16).build().getTime());
-			Profile profile2 = new Profile(
-					"Jan",
-					"Pasieka",
-					new Calendar.Builder().setDate(1995, 3, 28).build().getTime());
+				Account savedUserWithProfile1 = accountRepository.save(account1);
+				Account savedUserWithProfile2 = accountRepository.save(account2);
 
-			savedUser1.setProfile(profile1);
-			savedUser2.setProfile(profile2);
-
-			Account savedUserWithProfile1 = accountRepository.save(savedUser1);
-			Account savedUserWithProfile2 = accountRepository.save(savedUser2);
-
-			log.info("Updated Account with ID " + savedUserWithProfile1.getId() + " with Profile ID " + savedUserWithProfile1.getProfile().getId());
-			log.info("Updated Account with ID " + savedUserWithProfile2.getId() + " with Profile ID " + savedUserWithProfile2.getProfile().getId());
+//				log.info("Updated Account with ID " + savedUserWithProfile1.getId() + " with Profile ID " + savedUserWithProfile1.getProfile().getId());
+//				log.info("Updated Account with ID " + savedUserWithProfile2.getId() + " with Profile ID " + savedUserWithProfile2.getProfile().getId());
+			}
 		};
 	}
 
