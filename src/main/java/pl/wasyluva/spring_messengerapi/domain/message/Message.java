@@ -1,5 +1,6 @@
 package pl.wasyluva.spring_messengerapi.domain.message;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,16 +19,16 @@ import java.util.UUID;
 @Entity
 @Table(name = "messages")
 public class Message implements Comparable<Message> {
-    // TODO: Persist messages in Document database (MongoDB)
-
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "messages_uuid_generator")
     @GenericGenerator(name = "messages_uuid_generator", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID id;
 
-    private UUID sourceUserId;
+    @ManyToOne (optional = false)
+    @JsonIgnoreProperties({"participators"})
+    private Conversation conversation;
 
-    private UUID targetUserId;
+    private UUID sourceUserId;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date sentDate;
@@ -41,9 +42,8 @@ public class Message implements Comparable<Message> {
     @NotNull
     private String content;
 
-    public Message(UUID sourceUserId, UUID targetUserId, TempMessage tempMessage) {
+    public Message(UUID sourceUserId, TempMessage tempMessage) {
         this.sourceUserId = sourceUserId;
-        this.targetUserId = targetUserId;
         this.content = tempMessage.getContent();
     }
 
@@ -64,12 +64,12 @@ public class Message implements Comparable<Message> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Message message = (Message) o;
-        return Objects.equals(id, message.id) && Objects.equals(sourceUserId, message.sourceUserId) && Objects.equals(targetUserId, message.targetUserId) && Objects.equals(content, message.content);
+        return Objects.equals(id, message.id) && Objects.equals(sourceUserId, message.sourceUserId) && Objects.equals(content, message.content);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, sourceUserId, targetUserId, content);
+        return Objects.hash(id, sourceUserId, content);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class Message implements Comparable<Message> {
         return "Message{" +
                 "id=" + id +
                 ", sourceUserId=" + sourceUserId +
-                ", targetUserId=" + targetUserId +
+                ", conversation=" + conversation +
                 ", sentDate=" + sentDate +
                 ", deliveryDate=" + deliveryDate +
                 ", readDate=" + readDate +
@@ -94,5 +94,7 @@ public class Message implements Comparable<Message> {
             this.content = content;
         }
     }
+
+    // TODO: DTO for messages with participators with only id field
 }
 
