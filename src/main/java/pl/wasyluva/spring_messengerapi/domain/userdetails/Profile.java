@@ -5,9 +5,12 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.datetime.DateFormatter;
 
 import javax.persistence.*;
+import java.text.ParseException;
 import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
 
 @Data
@@ -18,6 +21,10 @@ import java.util.UUID;
 // TODO: Change to "profiles"
 @Table(name = "user_profiles")
 public class Profile {
+    private static DateFormatter dateFormatter = new DateFormatter("dd-MM-yyyy");
+    public static DateFormatter getBirthDateFormatter(){
+        return dateFormatter;
+    }
 
     @Id
     private UUID id = UUID.randomUUID();
@@ -45,5 +52,18 @@ public class Profile {
         if (this.avatar == null)
             return ProfileAvatar.DEFAULT_AVATAR;
         return avatar;
+    }
+
+    public String getBirthDate(){
+        return dateFormatter.print(birthDate, Locale.getDefault()).toString();
+    }
+
+    public void setBirthDate(String ddmmyyyy){
+        String[] split = ddmmyyyy.split("-");
+        try {
+            dateFormatter.parse(split[0] + "-" + split[1] + "-" + split[2], Locale.getDefault());
+        } catch (ParseException e) {
+            System.err.println("Parsing string to date failed. String: " + ddmmyyyy);
+        }
     }
 }

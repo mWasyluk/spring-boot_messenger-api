@@ -13,6 +13,7 @@ import pl.wasyluva.spring_messengerapi.domain.serializer.AccountDeserializer;
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.UUID;
 
 @Data
@@ -94,5 +95,18 @@ public class Account implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.enabled;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Account account = (Account) o;
+        return accountNonExpired == account.accountNonExpired && accountNonLocked == account.accountNonLocked && credentialsNonExpired == account.credentialsNonExpired && enabled == account.enabled && id.equals(account.id) && email.equals(account.email) && Objects.equals(authorities, account.authorities);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, email, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired, enabled);
     }
 }
