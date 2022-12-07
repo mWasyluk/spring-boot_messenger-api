@@ -20,7 +20,7 @@ public class Conversation {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "conversation_uuid_generator")
     @GenericGenerator(name = "conversation_uuid_generator", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID id;
-    @OneToMany(cascade = {CascadeType.ALL})
+    @OneToMany(cascade = {CascadeType.ALL}, orphanRemoval = true)
     @ElementCollection(targetClass = Message.class)
     @JoinTable(name = "conversation_messages")
     @JsonIgnore
@@ -44,6 +44,7 @@ public class Conversation {
         Optional<Message> matchingMessage = this.messages.stream()
                 .filter(message -> message.getId().equals(messageId)).findAny();
         matchingMessage.ifPresent(messages::remove);
+        matchingMessage.ifPresent(message -> message.setConversation(null));
         return messages.stream().noneMatch(message -> message.getId().equals(messageId));
     }
 

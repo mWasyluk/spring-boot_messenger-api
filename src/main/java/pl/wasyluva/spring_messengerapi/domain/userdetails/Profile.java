@@ -55,13 +55,13 @@ public class Profile {
     }
 
     public String getBirthDate(){
-        return dateFormatter.print(birthDate, Locale.getDefault()).toString();
+        return dateFormatter.print(birthDate, Locale.getDefault());
     }
 
     public void setBirthDate(String ddmmyyyy){
         String[] split = ddmmyyyy.split("-");
         try {
-            dateFormatter.parse(split[0] + "-" + split[1] + "-" + split[2], Locale.getDefault());
+            this.birthDate = dateFormatter.parse(split[0] + "-" + split[1] + "-" + split[2], Locale.getDefault());
         } catch (ParseException e) {
             System.err.println("Parsing string to date failed. String: " + ddmmyyyy);
         }

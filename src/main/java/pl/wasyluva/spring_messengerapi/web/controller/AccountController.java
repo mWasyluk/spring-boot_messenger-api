@@ -1,13 +1,14 @@
 package pl.wasyluva.spring_messengerapi.web.controller;
 
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import pl.wasyluva.spring_messengerapi.data.service.AccountService;
+import pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponse;
 import pl.wasyluva.spring_messengerapi.domain.userdetails.Account;
+import pl.wasyluva.spring_messengerapi.web.controller.support.PrincipalService;
 
-import java.util.List;
+@RequiredArgsConstructor
 
 @RestController
 @RequestMapping("/accounts")
@@ -16,26 +17,23 @@ public class AccountController {
     //  The method should be secured with IP and user authorities check (whitelisted IP and 'ADMIN' authority)
 
     private final AccountService accountService;
-
-    public AccountController(AccountService accountService) {
-        this.accountService = accountService;
-    }
+    private final PrincipalService principalService;
 
     // TODO: Remove after tests
     @GetMapping
-    public ResponseEntity<List<Account>> getAllAccounts(){
-        return new ResponseEntity<>(accountService.getAllAccounts(), HttpStatus.OK);
+    public ResponseEntity<?> getAllAccounts(){
+        return accountService.getAllAccounts().getResponseEntity();
     }
 
-
     @PostMapping("/register")
-    public ResponseEntity<Account> registerUserAccount(@RequestBody(required = false) Account newAccount){
-        if (newAccount == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        Account account = accountService.createUserAccount(newAccount);
-        return account != null ?
-                new ResponseEntity<>(account, HttpStatus.OK) :
-                new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    public ResponseEntity<?> registerUserAccount(@RequestBody Account.AccountRegistrationForm newAccountForm){
+        ServiceResponse<?> userAccount = accountService.createUserAccount(newAccountForm);
+        return new ResponseEntity<>(userAccount, userAccount.getStatusCode());
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteUserAccount(){
+        ServiceResponse<?> userAccount = accountService.deleteUserAccount(principalService.getPrincipalAccountId());
+        return new ResponseEntity<>(userAccount, userAccount.getStatusCode());
     }
 }

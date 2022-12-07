@@ -109,4 +109,18 @@ public class Account implements UserDetails {
     public int hashCode() {
         return Objects.hash(id, email, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired, enabled);
     }
+
+    @Data
+    public static class AccountRegistrationForm {
+        private String email;
+        private String password;
+
+        public AccountRegistrationForm() {
+        }
+
+        public AccountRegistrationForm(String email, String password) {
+            this.email = email;
+            this.password = password;
+        }
+    }
 }

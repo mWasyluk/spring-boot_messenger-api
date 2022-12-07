@@ -2,13 +2,16 @@ package pl.wasyluva.spring_messengerapi.data.service;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import pl.wasyluva.spring_messengerapi.data.repository.AccountRepository;
 import pl.wasyluva.spring_messengerapi.data.repository.ProfileRepository;
+import pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponse;
+import pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponseMessages;
 import pl.wasyluva.spring_messengerapi.domain.userdetails.Account;
 import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
+import pl.wasyluva.spring_messengerapi.util.UuidUtils;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,52 +27,68 @@ public class ProfileService {
     }
 
     // TODO: Return snips of profiles objects (DTO)
-    public List<Profile> getAllProfiles(){
-        return profileRepository.findAll();
+    public ServiceResponse<?> getAllProfiles(){
+        return new ServiceResponse<>(profileRepository.findAll(), HttpStatus.OK);
     }
 
 
     // TODO: Add a requestingUser parameter to the method and check if he is on 'friend list'
     //  if true -> return a full object
     //  if false -> return a snip of the object (DTO)
-    public Profile getProfileById(@NonNull UUID userId){
-        return profileRepository.findById(userId).orElse(null);
+    public ServiceResponse<?> getProfileById(@NonNull UUID profileUuid){
+        Optional<Profile> byId = profileRepository.findById(profileUuid);
+        if (!byId.isPresent()) {
+            return new ServiceResponse<>(ServiceResponseMessages.EXISTING_ID_REQUIRED, HttpStatus.NOT_FOUND);
+        }
+        return new ServiceResponse<>(byId.get(), HttpStatus.OK);
     }
 
-    public Profile createProfile(@NonNull UUID accountId, @NonNull Profile profile){
+    public ServiceResponse<?> getProfileById(String profileStringUuid){
+        if (!UuidUtils.isStringCorrectUuid(profileStringUuid)){
+            return ServiceResponse.INCORRECT_ID;
+        }
+        return getProfileById(UUID.fromString(profileStringUuid));
+    }
+
+    public ServiceResponse<?> createProfile(@NonNull UUID accountId, @NonNull Profile profile){
         Optional<Account> byId = accountRepository.findById(accountId);
         if (!byId.isPresent()){
             log.debug("Account with ID " + accountId + " does not exist");
-            return null;
+            return new ServiceResponse<>(ServiceResponseMessages.EXISTING_ID_REQUIRED, HttpStatus.NOT_FOUND);
         }
 
         if (byId.get().getProfile() != null){
             log.debug("Account with ID " + accountId + " already has Profile assigned");
-            return null;
+            return new ServiceResponse<>(ServiceResponseMessages.ACCOUNT_PROFILE_ALREADY_EXISTS, HttpStatus.CONFLICT);
         }
 
         Account account = byId.get();
         account.setProfile(profile);
 
         log.debug("Account with ID " + accountId + " has now Profile with ID " + profile.getId() + " assigned");
-        return accountRepository.save(account).getProfile();
+        return new ServiceResponse<>(accountRepository.save(account).getProfile(), HttpStatus.OK);
     }
 
     // TODO: Add a requestingUser parameter to the method and check if he is the owner of the profile
-    public Profile updateProfile(@NonNull Profile updatedProfile){
+    public ServiceResponse<?> updateProfile(UUID requestingProfileUuid, Profile updatedProfile){
         if (updatedProfile.getId() == null){
             log.debug("UserProfile provided as updated has to have an ID");
-            return null;
+            return new ServiceResponse<>(ServiceResponseMessages.ID_REQUIRED, HttpStatus.BAD_REQUEST);
         }
         Optional<Profile> byId = profileRepository.findById(updatedProfile.getId());
         if (!byId.isPresent()) {
             log.debug("UserProfile with ID " + updatedProfile.getId() + " does not exist");
-            return null;
+            return ServiceResponse.INCORRECT_ID;
         }
+
+        if (!updatedProfile.getId().equals(requestingProfileUuid)){
+            return ServiceResponse.UNAUTHORIZED;
+        }
+
         Profile toPersistProfile = updateAllProfileFields(byId.get(), updatedProfile);
 
         log.debug("Profile updated");
-        return profileRepository.save(toPersistProfile);
+        return new ServiceResponse<>(profileRepository.save(toPersistProfile), HttpStatus.OK);
     }
 
     private Profile updateAllProfileFields(Profile oldState, Profile updatedState){

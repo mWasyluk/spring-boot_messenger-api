@@ -3,21 +3,16 @@ package pl.wasyluva.spring_messengerapi.data.service;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.core.ApplicationContext;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Service;
 import pl.wasyluva.spring_messengerapi.data.repository.ConversationRepository;
 import pl.wasyluva.spring_messengerapi.data.repository.MessageRepository;
-import pl.wasyluva.spring_messengerapi.data.repository.ProfileRepository;
 import pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponse;
 import pl.wasyluva.spring_messengerapi.domain.message.Conversation;
 import pl.wasyluva.spring_messengerapi.domain.message.Message;
+import pl.wasyluva.spring_messengerapi.util.UuidUtils;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,24 +24,23 @@ import static pl.wasyluva.spring_messengerapi.data.service.support.ServiceRespon
 @Slf4j
 public class MessageService {
     private final MessageRepository messageRepository;
-    private final ProfileRepository profileRepository;
+//    private final ProfileRepository profileRepository;
     private final ConversationRepository conversationRepository;
+    private final ConversationService conversationService;
 
-    public ServiceResponse<List<Message>> getAllPersistedMessages(){
+    public ServiceResponse<?> getAllPersistedMessages(){
         return new ServiceResponse<>(
                 messageRepository.findAll(),
-                HttpStatus.OK,
-                OK);
+                HttpStatus.OK);
     }
 
-    public ServiceResponse<Message> updateMessage(@NonNull UUID requestingUserId, @NonNull Message updatedMessage){
+    public ServiceResponse<?> updateMessage(@NonNull UUID requestingProfileId, @NonNull Message updatedMessage){
         if (updatedMessage.getId() == null){
             log.debug("Message provided as updated has to have an ID");
 
             return new ServiceResponse<>(
-                    null,
-                    HttpStatus.BAD_REQUEST,
-                    ID_REQUIRED);
+                    ID_REQUIRED,
+                    HttpStatus.BAD_REQUEST);
         }
 
         Optional<Message> optionalPersistedMessage = messageRepository.findById(updatedMessage.getId());
@@ -55,20 +49,18 @@ public class MessageService {
             log.debug("Message with ID " + updatedMessage.getId() + " does not exist");
 
             return new ServiceResponse<>(
-                    null,
-                    HttpStatus.NOT_FOUND,
-                    EXISTING_ID_REQUIRED);
+                    EXISTING_ID_REQUIRED,
+                    HttpStatus.NOT_FOUND);
         }
 
         Message persistedMessage = optionalPersistedMessage.get();
 
-        if (!persistedMessage.getSourceUserId().equals(requestingUserId)){
+        if (!persistedMessage.getSourceUserId().equals(requestingProfileId)){
             log.debug("Requesting User does not have permission to update the message");
 
             return new ServiceResponse<>(
-                    null,
-                    HttpStatus.UNAUTHORIZED,
-                    UNAUTHORIZED);
+                    UNAUTHORIZED,
+                    HttpStatus.UNAUTHORIZED);
         }
 
         if (updatedMessage.getContent() != null)
@@ -85,66 +77,60 @@ public class MessageService {
 
         return new ServiceResponse<>(
                 updatedPersistedMessage,
-                HttpStatus.OK,
-                OK);
+                HttpStatus.OK);
     }
 
-    public ServiceResponse<Message> deleteMessage(@NonNull UUID requestingUserId, @NonNull UUID deletingMessageId){
-        Optional<Message> optionalPersistedMessage = messageRepository.findById(deletingMessageId);
-
-        if (!optionalPersistedMessage.isPresent()) {
-            log.debug("Message with ID " + deletingMessageId + " does not exist");
-
-            return new ServiceResponse<>(
-                    null,
-                    HttpStatus.NOT_FOUND,
-                    EXISTING_ID_REQUIRED);
+    public ServiceResponse<?> deleteMessage(UUID requestingProfileUuid, UUID messageUuid){
+        Optional<Message> byId = messageRepository.findById(messageUuid);
+        if (!byId.isPresent()){
+            return ServiceResponse.INCORRECT_ID;
         }
 
-        Message persistedMessage = optionalPersistedMessage.get();
+        Message message = byId.get();
 
-        if (!persistedMessage.getSourceUserId().equals(requestingUserId)){
-            log.debug("Requesting User does not have permission to delete the message");
-
-            return new ServiceResponse<>(
-                    null,
-                    HttpStatus.UNAUTHORIZED,
-                    UNAUTHORIZED);
+        if (!message.getSourceUserId().equals(requestingProfileUuid)){
+            return ServiceResponse.UNAUTHORIZED;
         }
 
-        if (persistedMessage.getConversation() != null) {
-            Optional<Conversation> conversationByMessage = conversationRepository.findById(persistedMessage.getConversation().getId());
-            if (conversationByMessage.isPresent()) {
-                conversationByMessage.get().removeMessageById(deletingMessageId);
-                conversationRepository.save(conversationByMessage.get());
-                log.debug("The Message entity has been removed from its Conversation");
-            }
-            else conversationRepository.deleteById(null);
+        Optional<Conversation> conversationByMessage = conversationRepository.findById(message.getConversation().getId());
+        if (!conversationByMessage.isPresent()){
+            return ServiceResponse.INCORRECT_ID;
         }
 
-        messageRepository.deleteById(deletingMessageId);
-
-        return new ServiceResponse<>(
-                null,
-                HttpStatus.OK,
-                OK);
+        Conversation conversation = conversationByMessage.get();
+        if (!conversation.removeMessageById(messageUuid)){
+            return ServiceResponse.INCORRECT_ID;
+        }
+        conversationRepository.save(conversation);
+        messageRepository.deleteById(messageUuid);
+        return ServiceResponse.OK;
     }
 
-    public ServiceResponse<?> getAllByConversationId(UUID conversationId, Pageable pageable) {
-        Optional<Conversation> optionalConversation = conversationRepository.findById(conversationId);
-        if (!optionalConversation.isPresent()){
-            log.debug("Provided conversationId does not exist in the database");
-            return new ServiceResponse<>(
-                    null,
-                    HttpStatus.BAD_REQUEST,
-                    EXISTING_ID_REQUIRED);
+    public ServiceResponse<?> deleteMessage(UUID requestingUserId, String messageUuid){
+        if (!UuidUtils.isStringCorrectUuid(messageUuid)){
+            return ServiceResponse.INCORRECT_ID;
+        }
+        return deleteMessage(requestingUserId, UUID.fromString(messageUuid));
+
+    }
+
+    public ServiceResponse<?> getAllMessagesByConversationId(UUID requestingProfileId, UUID conversationId, Pageable pageable) {
+        ServiceResponse<?> byId = conversationService.getById(requestingProfileId, conversationId);
+
+        if (!(byId.getBody() instanceof Conversation)){
+            return byId;
         }
 
-        List<Message> conversationMessages = messageRepository.findAllByConversationId(conversationId, pageable);
         return new ServiceResponse<>(
-                conversationMessages,
-                HttpStatus.OK,
-                OK);
+                ((Conversation)byId.getBody()).getMessages(),
+                HttpStatus.OK);
+    }
+
+    public ServiceResponse<?> getAllMessagesByConversationId(UUID requestingProfileId, String conversationStringUuid, Pageable pageable) {
+        if (!UuidUtils.isStringCorrectUuid(conversationStringUuid)){
+            return ServiceResponse.INCORRECT_ID;
+        }
+        return getAllMessagesByConversationId(requestingProfileId, UUID.fromString(conversationStringUuid), pageable);
     }
 
 //    public ServiceResponse<?> getLatestMessageWithLatestContacts(@NonNull UUID forProfileId, int howManyProfiles, int profileOffset){
