@@ -40,12 +40,11 @@ public class Conversation {
         return this.messages.add(message);
     }
 
-    public boolean removeMessageById(UUID messageId){
+    public void removeMessageById(UUID messageId){
         Optional<Message> matchingMessage = this.messages.stream()
-                .filter(message -> message.getId().equals(messageId)).findAny();
+                .filter(message -> message.getId().equals(messageId))
+                .findAny();
         matchingMessage.ifPresent(messages::remove);
-        matchingMessage.ifPresent(message -> message.setConversation(null));
-        return messages.stream().noneMatch(message -> message.getId().equals(messageId));
     }
 
     public Set<Message> getLatestMessages(int quantity){
