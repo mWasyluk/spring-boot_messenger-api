@@ -38,7 +38,7 @@ public class ProfileService {
     public ServiceResponse<?> getProfileById(@NonNull UUID profileUuid){
         Optional<Profile> byId = profileRepository.findById(profileUuid);
         if (!byId.isPresent()) {
-            return new ServiceResponse<>(ServiceResponseMessages.EXISTING_ID_REQUIRED, HttpStatus.NOT_FOUND);
+            return ServiceResponse.INCORRECT_ID;
         }
         return new ServiceResponse<>(byId.get(), HttpStatus.OK);
     }
@@ -54,7 +54,7 @@ public class ProfileService {
         Optional<Account> byId = accountRepository.findById(accountId);
         if (!byId.isPresent()){
             log.debug("Account with ID " + accountId + " does not exist");
-            return new ServiceResponse<>(ServiceResponseMessages.EXISTING_ID_REQUIRED, HttpStatus.NOT_FOUND);
+            return ServiceResponse.INCORRECT_ID;
         }
 
         if (byId.get().getProfile() != null){
@@ -73,7 +73,7 @@ public class ProfileService {
     public ServiceResponse<?> updateProfile(UUID requestingProfileUuid, Profile updatedProfile){
         if (updatedProfile.getId() == null){
             log.debug("UserProfile provided as updated has to have an ID");
-            return new ServiceResponse<>(ServiceResponseMessages.ID_REQUIRED, HttpStatus.BAD_REQUEST);
+            return ServiceResponse.INCORRECT_ID;
         }
         Optional<Profile> byId = profileRepository.findById(updatedProfile.getId());
         if (!byId.isPresent()) {

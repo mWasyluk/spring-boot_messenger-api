@@ -76,7 +76,7 @@ public class AccountService implements UserDetailsService {
     public ServiceResponse<?> deleteAccount(UUID requestingUserUuid){
         Optional<Account> byId = accountRepository.findById(requestingUserUuid);
         if (!byId.isPresent()){
-            return new ServiceResponse<>(ServiceResponseMessages.EXISTING_ID_REQUIRED, HttpStatus.NOT_FOUND);
+            return ServiceResponse.INCORRECT_ID;
         }
         this.accountRepository.deleteById(requestingUserUuid);
         return new ServiceResponse<>(ServiceResponseMessages.OK, HttpStatus.OK);

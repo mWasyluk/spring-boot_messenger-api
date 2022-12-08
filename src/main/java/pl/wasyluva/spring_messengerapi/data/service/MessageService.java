@@ -36,30 +36,21 @@ public class MessageService {
     public ServiceResponse<?> updateMessage(@NonNull UUID requestingProfileId, @NonNull Message updatedMessage){
         if (updatedMessage.getId() == null){
             log.debug("Message provided as updated has to have an ID");
-
-            return new ServiceResponse<>(
-                    ID_REQUIRED,
-                    HttpStatus.BAD_REQUEST);
+            return ServiceResponse.INCORRECT_ID;
         }
 
         Optional<Message> optionalPersistedMessage = messageRepository.findById(updatedMessage.getId());
 
         if (!optionalPersistedMessage.isPresent()) {
             log.debug("Message with ID " + updatedMessage.getId() + " does not exist");
-
-            return new ServiceResponse<>(
-                    EXISTING_ID_REQUIRED,
-                    HttpStatus.NOT_FOUND);
+            return ServiceResponse.INCORRECT_ID;
         }
 
         Message persistedMessage = optionalPersistedMessage.get();
 
         if (!persistedMessage.getSourceUserId().equals(requestingProfileId)){
             log.debug("Requesting User does not have permission to update the message");
-
-            return new ServiceResponse<>(
-                    UNAUTHORIZED,
-                    HttpStatus.UNAUTHORIZED);
+            return ServiceResponse.UNAUTHORIZED;
         }
 
         if (updatedMessage.getContent() != null)
@@ -111,15 +102,15 @@ public class MessageService {
 
     }
 
+    // TODO: Fix pageable
     public ServiceResponse<?> getAllMessagesByConversationId(UUID requestingProfileId, UUID conversationId, Pageable pageable) {
-        ServiceResponse<?> byId = conversationService.getById(requestingProfileId, conversationId);
-
-        if (!(byId.getBody() instanceof Conversation)){
-            return byId;
+        ServiceResponse<?> conversationServiceResponse = conversationService.getById(requestingProfileId, conversationId);
+        if (!(conversationServiceResponse.getBody() instanceof Conversation)){
+            return conversationServiceResponse;
         }
 
         return new ServiceResponse<>(
-                ((Conversation)byId.getBody()).getMessages(),
+                ((Conversation)conversationServiceResponse.getBody()).getMessages(),
                 HttpStatus.OK);
     }
 

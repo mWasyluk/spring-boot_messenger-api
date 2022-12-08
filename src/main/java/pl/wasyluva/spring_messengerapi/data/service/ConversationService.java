@@ -26,11 +26,11 @@ public class ConversationService {
         Optional<Conversation> optionalConversationById = conversationRepository.findById(conversationUuid);
         if (!optionalConversationById.isPresent()){
             log.debug("Conversation with UUID " + conversationUuid + " does not exist");
-            return new ServiceResponse<>(CONVERSATION_DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
+            return ServiceResponse.INCORRECT_ID;
         }
         if (optionalConversationById.get().getParticipators().stream()
                 .noneMatch(profile -> profile.getId().equals(requestingProfileUuid))){
-            return new ServiceResponse<>(UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+            return ServiceResponse.UNAUTHORIZED;
         }
         return new ServiceResponse<>(
                 optionalConversationById.get(),
@@ -39,7 +39,7 @@ public class ConversationService {
 
     public ServiceResponse<?> getById(UUID requestingProfileUuid, String conversationUuidString){
         if (!UuidUtils.isStringCorrectUuid(conversationUuidString)) {
-            return new ServiceResponse<>(EXISTING_ID_REQUIRED, HttpStatus.BAD_REQUEST);
+            return ServiceResponse.INCORRECT_ID;
         }
         return getById(requestingProfileUuid, UUID.fromString(conversationUuidString));
     }
@@ -51,9 +51,7 @@ public class ConversationService {
         if (participatorIdsWithoutDuplicates.stream()
                 .map(Profile::getId)
                 .noneMatch(id -> id.equals(requestingProfileUuid))){
-            return new ServiceResponse<>(
-                    UNAUTHORIZED,
-                    HttpStatus.UNAUTHORIZED);
+            return ServiceResponse.UNAUTHORIZED;
         }
 
         // check if the Conversation contains any participator
@@ -81,7 +79,7 @@ public class ConversationService {
         Conversation savedConversation = conversationRepository.save(new Conversation(new ArrayList<>(participatorIdsWithoutDuplicates)));
         return new ServiceResponse<>(
                 savedConversation,
-                HttpStatus.OK);
+                HttpStatus.CREATED);
     }
 
     /** The method filters the given as the first argument Collection <Conversation>.
@@ -134,9 +132,7 @@ public class ConversationService {
         if (conversation.getParticipators().stream()
                 .map(Profile::getId)
                 .noneMatch(id -> id.equals(requestingProfileUuid))){
-            return new ServiceResponse<>(
-                    UNAUTHORIZED,
-                    HttpStatus.UNAUTHORIZED);
+            return ServiceResponse.UNAUTHORIZED;
         }
 
         // check if the Message can be added to the Conversation
@@ -150,12 +146,12 @@ public class ConversationService {
         Conversation savedConversation = conversationRepository.save(conversation);
         return new ServiceResponse<>(
                 savedConversation,
-                HttpStatus.OK);
+                HttpStatus.CREATED);
     }
 
     public ServiceResponse<?> addMessageToConversationById(UUID requestingProfileUuid, String conversationStringUuid, Message messageToPersist) {
         if (!UuidUtils.isStringCorrectUuid(conversationStringUuid)){
-            return new ServiceResponse<>(EXISTING_ID_REQUIRED, HttpStatus.NOT_FOUND);
+            return ServiceResponse.INCORRECT_ID;
         }
         return addMessageToConversationById(requestingProfileUuid, UUID.fromString(conversationStringUuid), messageToPersist);
     }
@@ -177,7 +173,7 @@ public class ConversationService {
     public ServiceResponse<?> deleteConversationById(UUID requestingProfileUuid, String conversationUuidString) {
         // check if the UUID is correct
         if (!UuidUtils.isStringCorrectUuid(conversationUuidString)){
-            return new ServiceResponse<>(EXISTING_ID_REQUIRED, HttpStatus.NOT_FOUND);
+            return ServiceResponse.INCORRECT_ID;
         }
 
         // redirect to method with a different signature
