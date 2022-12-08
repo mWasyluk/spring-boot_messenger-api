@@ -12,19 +12,18 @@ import pl.wasyluva.spring_messengerapi.data.repository.AccountRepository;
 import pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponse;
 import pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponseMessages;
 import pl.wasyluva.spring_messengerapi.domain.userdetails.Account;
+import pl.wasyluva.spring_messengerapi.util.BcryptUtils;
 import pl.wasyluva.spring_messengerapi.util.UuidUtils;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @Service
 @Slf4j
 public class AccountService implements UserDetailsService {
     private final AccountRepository accountRepository;
-    private final PasswordEncoder passwordEncoder;
 
     // TODO: Remove after tests
     public ServiceResponse<?> getAllAccounts() {
@@ -42,7 +41,7 @@ public class AccountService implements UserDetailsService {
         return byEmail.get();
     }
 
-    public ServiceResponse<?> createUserAccount(@NonNull Account.AccountRegistrationForm form){
+    public ServiceResponse<?> createAccount(@NonNull Account.AccountRegistrationForm form){
         Account account = new Account(form.getEmail(), form.getPassword());
 
         Optional<Account> byId = accountRepository.findById(account.getId());
@@ -58,9 +57,8 @@ public class AccountService implements UserDetailsService {
             return new ServiceResponse<>(ServiceResponseMessages.EMAIL_ALREADY_IN_USE, HttpStatus.CONFLICT);
         }
 
-        Pattern bcryptPattern = Pattern.compile("\\A\\$2a?\\$\\d\\d\\$[./0-9A-Za-z]{53}");
         String password = account.getPassword();
-        if (!bcryptPattern.matcher(password).matches()) {
+        if (!BcryptUtils.BCRYPT_PATTERN.matcher(password).matches()) {
             log.debug("Provided password is not a valid BCrypt pattern. Password: " + password);
             return new ServiceResponse<>(ServiceResponseMessages.PLAIN_PASSWORD_ERROR, HttpStatus.BAD_REQUEST);
         }
@@ -75,7 +73,7 @@ public class AccountService implements UserDetailsService {
 
     // TODO: Add method createAdminAccount()
 
-    public ServiceResponse<?> deleteUserAccount(UUID requestingUserUuid){
+    public ServiceResponse<?> deleteAccount(UUID requestingUserUuid){
         Optional<Account> byId = accountRepository.findById(requestingUserUuid);
         if (!byId.isPresent()){
             return new ServiceResponse<>(ServiceResponseMessages.EXISTING_ID_REQUIRED, HttpStatus.NOT_FOUND);
@@ -84,11 +82,11 @@ public class AccountService implements UserDetailsService {
         return new ServiceResponse<>(ServiceResponseMessages.OK, HttpStatus.OK);
     }
 
-    public ServiceResponse<?> deleteUserAccount(String requestingUserStringUuid){
+    public ServiceResponse<?> deleteAccount(String requestingUserStringUuid){
         if (!UuidUtils.isStringCorrectUuid(requestingUserStringUuid)){
             return new ServiceResponse<>(ServiceResponseMessages.EXISTING_ID_REQUIRED, HttpStatus.NOT_FOUND);
         }
-        return deleteUserAccount(UUID.fromString(requestingUserStringUuid));
+        return deleteAccount(UUID.fromString(requestingUserStringUuid));
     }
 
 

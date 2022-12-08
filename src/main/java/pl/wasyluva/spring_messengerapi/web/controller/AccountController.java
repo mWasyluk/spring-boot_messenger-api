@@ -26,14 +26,14 @@ public class AccountController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUserAccount(@RequestBody Account.AccountRegistrationForm newAccountForm){
-        ServiceResponse<?> userAccount = accountService.createUserAccount(newAccountForm);
+    public ResponseEntity<?> createAccount(@RequestBody Account.AccountRegistrationForm newAccountForm){
+        ServiceResponse<?> userAccount = accountService.createAccount(newAccountForm);
         return new ResponseEntity<>(userAccount, userAccount.getStatusCode());
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteUserAccount(){
-        ServiceResponse<?> userAccount = accountService.deleteUserAccount(principalService.getPrincipalAccountId());
+    public ResponseEntity<?> deleteAccount(){
+        ServiceResponse<?> userAccount = accountService.deleteAccount(principalService.getPrincipalAccountId());
         return new ResponseEntity<>(userAccount, userAccount.getStatusCode());
     }
 }
