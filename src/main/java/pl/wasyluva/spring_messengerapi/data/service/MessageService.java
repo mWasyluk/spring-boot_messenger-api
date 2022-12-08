@@ -3,6 +3,7 @@ package pl.wasyluva.spring_messengerapi.data.service;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.Store;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,8 +25,6 @@ import static pl.wasyluva.spring_messengerapi.data.service.support.ServiceRespon
 @Slf4j
 public class MessageService {
     private final MessageRepository messageRepository;
-//    private final ProfileRepository profileRepository;
-    private final ConversationRepository conversationRepository;
     private final ConversationService conversationService;
 
     public ServiceResponse<?> getAllPersistedMessages(){
@@ -92,16 +91,14 @@ public class MessageService {
             return ServiceResponse.UNAUTHORIZED;
         }
 
-        Optional<Conversation> conversationByMessage = conversationRepository.findById(message.getConversation().getId());
-        if (!conversationByMessage.isPresent()){
-            return ServiceResponse.INCORRECT_ID;
+        ServiceResponse<?> conversationServiceResponse = conversationService.getById(requestingProfileUuid, message.getConversation().getId());
+        if (!(conversationServiceResponse.getBody() instanceof Conversation)) {
+            return conversationServiceResponse;
         }
 
-        Conversation conversation = conversationByMessage.get();
-        if (!conversation.removeMessageById(messageUuid)){
-            return ServiceResponse.INCORRECT_ID;
-        }
-        conversationRepository.save(conversation);
+        Conversation conversation = (Conversation) conversationServiceResponse.getBody();
+        conversation.removeMessageById(messageUuid);
+
         messageRepository.deleteById(messageUuid);
         return ServiceResponse.OK;
     }
