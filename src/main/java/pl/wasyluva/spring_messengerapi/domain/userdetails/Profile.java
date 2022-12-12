@@ -1,6 +1,7 @@
 package pl.wasyluva.spring_messengerapi.domain.userdetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -54,8 +55,15 @@ public class Profile {
         return avatar;
     }
 
-    public String getBirthDate(){
+    @JsonProperty("birthdate")
+    public String getBirthDateAsString(){
         return dateFormatter.print(birthDate, Locale.getDefault());
+    }
+
+    @JsonIgnore
+//    @Transient
+    public Date getBirthDate() {
+        return this.birthDate;
     }
 
     public void setBirthDate(String ddmmyyyy){
@@ -65,5 +73,9 @@ public class Profile {
         } catch (ParseException e) {
             System.err.println("Parsing string to date failed. String: " + ddmmyyyy);
         }
+    }
+
+    public void setBirthDate(Date birthDate){
+        this.birthDate = birthDate;
     }
 }

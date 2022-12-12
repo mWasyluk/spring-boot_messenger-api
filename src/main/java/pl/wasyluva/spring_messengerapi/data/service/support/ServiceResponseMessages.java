@@ -13,7 +13,7 @@ public interface ServiceResponseMessages {
     String EMAIL_ALREADY_IN_USE = "Ten adres e-mail jest już wykorzystywany";
     String PLAIN_PASSWORD_ERROR = "Hasło powinno zostać zaszyfrowane przed przesłaniem";
     String CONVERSATION_DOES_NOT_EXIST = "Taka konwersacja nie istnieje";
-    String BAD_CONVERSATION_PARTICIPATORS = "Nie można stworzyć konwersacji z takimi użytkownikami";
+    String INVALID_CONVERSATION_PARTICIPATORS = "Nie można stworzyć konwersacji z takimi użytkownikami";
     String CONVERSATION_CONFLICT = "Konwersacja już istnieje";
     String CANNOT_ADD_MESSAGE_TO_CONVERSATION = "Wiadomość nie może zostać przesłana";
     String OK = "Operacja udana";

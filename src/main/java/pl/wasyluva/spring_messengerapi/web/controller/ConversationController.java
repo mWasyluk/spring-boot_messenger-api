@@ -59,10 +59,7 @@ public class ConversationController {
                 .getResponseEntity();
     }
 
-    // TODO: save to list of participators which have deleted this conversation.
-    //  Check if request is sent form all participators already.
-    //  if true -> remove conversation and all its messages from the database;
-    //  else -> add user to Conversation's List<Profile> deleters;
+
     @DeleteMapping(value = "/delete/{conversationIdAsString}")
     public ResponseEntity<?> deleteConversationById(@PathVariable String conversationIdAsString){
         return conversationService.deleteConversationById(

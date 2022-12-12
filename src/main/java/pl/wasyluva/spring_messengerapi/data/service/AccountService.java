@@ -79,12 +79,12 @@ public class AccountService implements UserDetailsService {
             return ServiceResponse.INCORRECT_ID;
         }
         this.accountRepository.deleteById(requestingUserUuid);
-        return new ServiceResponse<>(ServiceResponseMessages.OK, HttpStatus.OK);
+        return ServiceResponse.OK;
     }
 
     public ServiceResponse<?> deleteAccount(String requestingUserStringUuid){
         if (!UuidUtils.isStringCorrectUuid(requestingUserStringUuid)){
-            return new ServiceResponse<>(ServiceResponseMessages.EXISTING_ID_REQUIRED, HttpStatus.NOT_FOUND);
+            return ServiceResponse.INCORRECT_ID;
         }
         return deleteAccount(UUID.fromString(requestingUserStringUuid));
     }

@@ -11,7 +11,6 @@ import javax.persistence.*;
 import java.util.*;
 
 @Data
-@NoArgsConstructor
 
 @Entity
 @Table(name = "conversations")
@@ -30,12 +29,19 @@ public class Conversation {
     @JsonIgnoreProperties({"birthDate"})
     private List<Profile> participators;
 
+    public Conversation(){
+        this.messages = new ArrayList<>();
+        this.participators = new ArrayList<>();
+    }
+
     public Conversation(List<Profile> participators) {
         this.messages = new ArrayList<>();
         this.participators = new ArrayList<>(participators);
     }
 
     public boolean addMessage(Message message){
+        if (messages.contains(message))
+            return false;
         message.setConversation(this);
         return this.messages.add(message);
     }

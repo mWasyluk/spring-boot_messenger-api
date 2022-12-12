@@ -3,11 +3,9 @@ package pl.wasyluva.spring_messengerapi.data.service;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.Store;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import pl.wasyluva.spring_messengerapi.data.repository.ConversationRepository;
 import pl.wasyluva.spring_messengerapi.data.repository.MessageRepository;
 import pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponse;
 import pl.wasyluva.spring_messengerapi.domain.message.Conversation;
@@ -16,8 +14,6 @@ import pl.wasyluva.spring_messengerapi.util.UuidUtils;
 
 import java.util.Optional;
 import java.util.UUID;
-
-import static pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponseMessages.*;
 
 @RequiredArgsConstructor
 
@@ -70,7 +66,7 @@ public class MessageService {
                 HttpStatus.OK);
     }
 
-    public ServiceResponse<?> deleteMessage(UUID requestingProfileUuid, UUID messageUuid){
+    public ServiceResponse<?> deleteMessage(@NonNull UUID requestingProfileUuid, @NonNull UUID messageUuid){
         Optional<Message> byId = messageRepository.findById(messageUuid);
         if (!byId.isPresent()){
             return ServiceResponse.INCORRECT_ID;
@@ -94,7 +90,7 @@ public class MessageService {
         return ServiceResponse.OK;
     }
 
-    public ServiceResponse<?> deleteMessage(UUID requestingUserId, String messageUuid){
+    public ServiceResponse<?> deleteMessage(@NonNull UUID requestingUserId, @NonNull String messageUuid){
         if (!UuidUtils.isStringCorrectUuid(messageUuid)){
             return ServiceResponse.INCORRECT_ID;
         }
@@ -103,7 +99,8 @@ public class MessageService {
     }
 
     // TODO: Fix pageable
-    public ServiceResponse<?> getAllMessagesByConversationId(UUID requestingProfileId, UUID conversationId, Pageable pageable) {
+    // TODO: Test pageable
+    public ServiceResponse<?> getAllMessagesByConversationId(@NonNull UUID requestingProfileId, @NonNull UUID conversationId, @NonNull Pageable pageable) {
         ServiceResponse<?> conversationServiceResponse = conversationService.getById(requestingProfileId, conversationId);
         if (!(conversationServiceResponse.getBody() instanceof Conversation)){
             return conversationServiceResponse;
@@ -114,7 +111,7 @@ public class MessageService {
                 HttpStatus.OK);
     }
 
-    public ServiceResponse<?> getAllMessagesByConversationId(UUID requestingProfileId, String conversationStringUuid, Pageable pageable) {
+    public ServiceResponse<?> getAllMessagesByConversationId(@NonNull UUID requestingProfileId, @NonNull String conversationStringUuid, @NonNull Pageable pageable) {
         if (!UuidUtils.isStringCorrectUuid(conversationStringUuid)){
             return ServiceResponse.INCORRECT_ID;
         }

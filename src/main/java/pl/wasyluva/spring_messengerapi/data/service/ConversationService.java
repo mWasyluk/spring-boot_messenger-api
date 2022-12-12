@@ -9,6 +9,7 @@ import pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponse;
 import pl.wasyluva.spring_messengerapi.domain.message.Conversation;
 import pl.wasyluva.spring_messengerapi.domain.message.Message;
 import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
+import pl.wasyluva.spring_messengerapi.util.DebugLogger;
 import pl.wasyluva.spring_messengerapi.util.UuidUtils;
 
 import java.util.*;
@@ -25,13 +26,16 @@ public class ConversationService {
     public ServiceResponse<?> getById(UUID requestingProfileUuid, UUID conversationUuid){
         Optional<Conversation> optionalConversationById = conversationRepository.findById(conversationUuid);
         if (!optionalConversationById.isPresent()){
-            log.debug("Conversation with UUID " + conversationUuid + " does not exist");
+            DebugLogger.logObjectNotFound(conversationUuid.toString());
             return ServiceResponse.INCORRECT_ID;
         }
+
         if (optionalConversationById.get().getParticipators().stream()
                 .noneMatch(profile -> profile.getId().equals(requestingProfileUuid))){
+            DebugLogger.logUnauthorizedProfile(requestingProfileUuid.toString());
             return ServiceResponse.UNAUTHORIZED;
         }
+
         return new ServiceResponse<>(
                 optionalConversationById.get(),
                 HttpStatus.OK);
@@ -39,6 +43,7 @@ public class ConversationService {
 
     public ServiceResponse<?> getById(UUID requestingProfileUuid, String conversationUuidString){
         if (!UuidUtils.isStringCorrectUuid(conversationUuidString)) {
+            DebugLogger.logInvalidUuidAsString(conversationUuidString);
             return ServiceResponse.INCORRECT_ID;
         }
         return getById(requestingProfileUuid, UUID.fromString(conversationUuidString));
@@ -47,19 +52,19 @@ public class ConversationService {
     public ServiceResponse<?> createConversation(UUID requestingProfileUuid, Collection<Profile> participators){
         Set<Profile> participatorIdsWithoutDuplicates = new HashSet<>(participators);
 
+        // check if the Conversation contains any participator
+        if (participatorIdsWithoutDuplicates.size() < 1){
+            log.debug("Conversation without participants cannot be created");
+            return new ServiceResponse<>(
+                    INVALID_CONVERSATION_PARTICIPATORS,
+                    HttpStatus.BAD_REQUEST);
+        }
+
         // check if the requesting user is a participator
         if (participatorIdsWithoutDuplicates.stream()
                 .map(Profile::getId)
                 .noneMatch(id -> id.equals(requestingProfileUuid))){
             return ServiceResponse.UNAUTHORIZED;
-        }
-
-        // check if the Conversation contains any participator
-        if (participatorIdsWithoutDuplicates.size() < 1){
-            log.debug("Conversation without participants cannot be created");
-            return new ServiceResponse<>(
-                    BAD_CONVERSATION_PARTICIPATORS,
-                    HttpStatus.BAD_REQUEST);
         }
 
         List<UUID> participatorIds = participatorIdsWithoutDuplicates.stream()
@@ -156,7 +161,11 @@ public class ConversationService {
         return addMessageToConversationById(requestingProfileUuid, UUID.fromString(conversationStringUuid), messageToPersist);
     }
 
-
+    // TODO: save requesting Profile to list of participators which have deleted this conversation.
+    //  Check if the request is already sent form all participators.
+    //  if true -> remove conversation;
+    //  else -> add Profile the to Conversation's list of Profiles that have requested deletion;
+    //  Tests then...
     public ServiceResponse<?> deleteConversationById(UUID requestingProfileUuid, UUID conversationId) {
         ServiceResponse<?> byId = getById(requestingProfileUuid, conversationId);
 
@@ -184,5 +193,4 @@ public class ConversationService {
     public ServiceResponse<List<Conversation>> getAll() {
         return new ServiceResponse<>(conversationRepository.findAll(), HttpStatus.OK);
     }
-
 }

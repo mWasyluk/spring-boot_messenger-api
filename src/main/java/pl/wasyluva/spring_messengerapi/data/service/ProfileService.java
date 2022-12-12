@@ -1,6 +1,7 @@
 package pl.wasyluva.spring_messengerapi.data.service;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,22 +16,17 @@ import pl.wasyluva.spring_messengerapi.util.UuidUtils;
 import java.util.Optional;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 @Service
 @Slf4j
 public class ProfileService {
     private final ProfileRepository profileRepository;
     private final AccountRepository accountRepository;
 
-    public ProfileService(ProfileRepository profileRepository, AccountRepository accountRepository) {
-        this.profileRepository = profileRepository;
-        this.accountRepository = accountRepository;
-    }
-
     // TODO: Return snips of profiles objects (DTO)
     public ServiceResponse<?> getAllProfiles(){
         return new ServiceResponse<>(profileRepository.findAll(), HttpStatus.OK);
     }
-
 
     // TODO: Add a requestingUser parameter to the method and check if he is on 'friend list'
     //  if true -> return a full object
@@ -82,6 +78,7 @@ public class ProfileService {
         }
 
         if (!updatedProfile.getId().equals(requestingProfileUuid)){
+            log.debug("Profile's UUID of the requesting user is different from the UUID of the Profile that has been found");
             return ServiceResponse.UNAUTHORIZED;
         }
 
@@ -91,7 +88,7 @@ public class ProfileService {
         return new ServiceResponse<>(profileRepository.save(toPersistProfile), HttpStatus.OK);
     }
 
-    private Profile updateAllProfileFields(Profile oldState, Profile updatedState){
+    private Profile updateAllProfileFields(@NonNull Profile oldState, @NonNull Profile updatedState){
         if (updatedState.getAvatar() != null){
             oldState.setAvatar(updatedState.getAvatar());
         } if (updatedState.getFirstName() != null) {
