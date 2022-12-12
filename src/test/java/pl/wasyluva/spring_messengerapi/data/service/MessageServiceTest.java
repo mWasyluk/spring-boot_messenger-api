@@ -5,15 +5,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import pl.wasyluva.spring_messengerapi.data.repository.MessageRepository;
-import pl.wasyluva.spring_messengerapi.data.repository.ProfileRepository;
+import pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponse;
+import pl.wasyluva.spring_messengerapi.domain.message.Conversation;
 import pl.wasyluva.spring_messengerapi.domain.message.Message;
-import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
 
 import java.util.Date;
 import java.util.Optional;
@@ -23,134 +22,188 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Check if MessageService entity")
 class MessageServiceTest {
     @Mock
-    private MessageRepository messageRepository;
+    MessageRepository messageRepository;
     @Mock
-    private ProfileRepository profileRepository;
-    @InjectMocks
-    private MessageService messageService;
+    ConversationService conversationService;
+    MessageService messageService;
 
-    @Test
-    @DisplayName("exists")
-    void doesExist(){
-        assertThat(messageService).isNotNull();
-    }
-
-    @Test
-    @DisplayName("contains existing MessageRepository type property")
-    void containsMessageRepository(){
-        assertThat(messageRepository).isNotNull();
-    }
-
-    private UUID persistedUserId1 = null;
-    private UUID persistedUserId2 = null;
-    private Message testMessage = null;
+    UUID testMessageAuthorUuid = UUID.randomUUID();
+    Message testMessage;
 
     @BeforeEach
     void setUp() {
-        persistedUserId1 = UUID.randomUUID();
-        persistedUserId2 = UUID.randomUUID();
-        testMessage = new Message(persistedUserId1, persistedUserId2, new Message.TempMessage("Test message"));
-
-        lenient().when(profileRepository.findById(persistedUserId1))
-                .thenReturn( Optional.of(new Profile("test", "test", new Date())));
-        lenient().when(profileRepository.findById(persistedUserId2))
-                .thenReturn( Optional.of(new Profile("test", "test", new Date())));
+        messageService = new MessageService(messageRepository, conversationService);
+        testMessage = new Message();
+        testMessage.setSourceUserId(testMessageAuthorUuid);
     }
 
     @Nested
-    @DisplayName("uses correct method to")
-    class HappyPathMethodsCheck{
-
+    @DisplayName("Test if the updateMessage() method")
+    class UpdateMessageTest {
         @Test
-        @DisplayName("save new Message object in DB")
-        void saveMessage() {
-            messageService.saveMessage(testMessage);
+        @DisplayName("returns incorrect_id when the message update does not contain an ID")
+        void returnsIncorrectIdWhenTheMessageUpdateDoesNotContainAnId() {
+            ServiceResponse<?> serviceResponse = messageService.updateMessage(testMessageAuthorUuid, testMessage);
 
-            verify(messageRepository).save(testMessage);
+            assertThat(serviceResponse).isEqualTo(ServiceResponse.INCORRECT_ID);
         }
 
         @Test
-        @DisplayName("update changed Message object in DB")
-        void updateMessage() {
-            UUID tempMessageId = UUID.randomUUID();
-            testMessage.setId(tempMessageId);
-            Message updatedMessage = new Message();
-            updatedMessage.setId(testMessage.getId());
-            updatedMessage.setContent("Updated message content");
+        @DisplayName("returns incorrect_id when the message update contains nonexistent ID")
+        void returnsIncorrectIdWhenTheMessageUpdateContainsNonexistentId() {
+            testMessage.setId(UUID.randomUUID());
+            when(messageRepository.findById(any())).thenReturn(Optional.empty());
 
-            when(messageRepository.findById(tempMessageId)).thenReturn(Optional.of(testMessage));
-            messageService.updateMessage(persistedUserId1, updatedMessage);
+            ServiceResponse<?> serviceResponse = messageService.updateMessage(testMessageAuthorUuid, testMessage);
 
-            verify(messageRepository).save(testMessage);
-            assertThat(messageRepository.findById(tempMessageId).get().getContent()).isEqualTo("Updated message content");
+            assertThat(serviceResponse).isEqualTo(ServiceResponse.INCORRECT_ID);
         }
 
         @Test
-        @DisplayName("delete indicated Message object from DB")
-        void deleteMessage() {
-            assertThat(true).isTrue();
+        @DisplayName("returns unauthorized when the message update sent by a profile another then the author's")
+        void returnsUnauthorizedWhenTheMessageUpdateSentByAProfileAnotherThenTheAuthors() {
+            testMessage.setId(UUID.randomUUID());
+            when(messageRepository.findById(any())).thenReturn(Optional.of(testMessage));
+
+            ServiceResponse<?> serviceResponse = messageService.updateMessage(UUID.randomUUID(), testMessage);
+
+            assertThat(serviceResponse).isEqualTo(ServiceResponse.UNAUTHORIZED);
+        }
+
+        @Test
+        @DisplayName("returns updated message when the message update contains an ID and new data")
+        void returnsUpdatedMessageWhenTheMessageUpdateContainsAnIdAndNewData() {
+            UUID messageId = UUID.randomUUID();
+            testMessage.setId(messageId);
+            testMessage.setContent("test");
+            testMessage.setSentDate(new Date());
+            when(messageRepository.findById(any())).thenReturn(Optional.of(testMessage));
+            Message messageUpdate = new Message();
+            messageUpdate.setId(messageId);
+            messageUpdate.setContent("update");
+            Date deliveryDate = new Date();
+            messageUpdate.setDeliveryDate(deliveryDate);
+            Date readDate = new Date();
+            messageUpdate.setReadDate(readDate);
+            when(messageRepository.save(any())).thenReturn(messageUpdate);
+
+            ServiceResponse<?> serviceResponse = messageService.updateMessage(testMessageAuthorUuid, messageUpdate);
+
+            assertThat(serviceResponse.getBody()).isExactlyInstanceOf(Message.class);
+            ArgumentCaptor<Message> messageArgumentCaptor = ArgumentCaptor.forClass(Message.class);
+            verify(messageRepository).save(messageArgumentCaptor.capture());
+            assertThat(messageArgumentCaptor.getValue().getContent()).isEqualTo("update");
+            assertThat(messageArgumentCaptor.getValue().getReadDate()).isEqualTo(readDate);
+            assertThat(messageArgumentCaptor.getValue().getDeliveryDate()).isEqualTo(deliveryDate);
+        }
+
+        @Test
+        @DisplayName("does not update dates that are already set")
+        void doesNotUpdateDatesThatAreAlreadySet() {
+            UUID messageId = UUID.randomUUID();
+            testMessage.setId(messageId);
+            Date sentDate = new Date();
+            Date deliveryDate = new Date();
+            Date readDate = new Date();
+            testMessage.setSentDate(sentDate);
+            testMessage.setDeliveryDate(deliveryDate);
+            testMessage.setReadDate(readDate);
+            when(messageRepository.findById(any())).thenReturn(Optional.of(testMessage));
+            Message messageUpdate = new Message();
+            messageUpdate.setId(messageId);
+            messageUpdate.setSentDate(new Date());
+            messageUpdate.setDeliveryDate(new Date());
+            messageUpdate.setReadDate(new Date());
+            when(messageRepository.save(any())).thenReturn(messageUpdate);
+
+            ServiceResponse<?> serviceResponse = messageService.updateMessage(testMessageAuthorUuid, messageUpdate);
+
+            assertThat(serviceResponse.getBody()).isExactlyInstanceOf(Message.class);
+            ArgumentCaptor<Message> messageArgumentCaptor = ArgumentCaptor.forClass(Message.class);
+            verify(messageRepository).save(messageArgumentCaptor.capture());
+            assertThat(messageArgumentCaptor.getValue().getSentDate()).isEqualTo(sentDate);
+            assertThat(messageArgumentCaptor.getValue().getDeliveryDate()).isEqualTo(deliveryDate);
+            assertThat(messageArgumentCaptor.getValue().getReadDate()).isEqualTo(readDate);
         }
     }
 
     @Nested
-    @DisplayName("returns proper status if sent updating message that")
-    class UpdateMessageMethodTest{
-        @Test
-        @DisplayName("has no ID")
-        public void updatingMessageWithNoId(){
-            assertThat(messageService.updateMessage(testMessage.getSourceUserId(), testMessage))
-                    .isEqualTo(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
-        }
-
-        @Test
-        @DisplayName("is not persisted")
-        public void updatingNotPersistedMessage(){
+    @DisplayName("Test if the deleteMessage() method")
+    class DeleteMessageTest {
+        @BeforeEach
+        void setUp() {
             testMessage.setId(UUID.randomUUID());
-
-            assertThat(messageService.updateMessage(testMessage.getTargetUserId(), testMessage))
-                    .isEqualTo(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         }
 
         @Test
-        @DisplayName("is sent by another user")
-        public void updatingPersistedMessageAsAnotherUser(){
-            testMessage.setId(UUID.randomUUID());
-            when(messageRepository.findById(testMessage.getId())).thenReturn(Optional.ofNullable(testMessage));
+        @DisplayName("returns INCORRECT_ID when the message ID is an invalid UUID as a String")
+        void returnsIncorrectIdWhenTheMessageIdIsAnInvalidUuidAsAString() {
+            String invalidUuid = "8ae5fbf0-7881-a1eb-0242ac120002";
 
-            assertThat(messageService.updateMessage(UUID.randomUUID(), testMessage))
-                    .isEqualTo(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+            ServiceResponse<?> serviceResponse = messageService.deleteMessage(testMessageAuthorUuid, invalidUuid);
+
+            assertThat(serviceResponse).isEqualTo(ServiceResponse.INCORRECT_ID);
+            verify(messageRepository, never()).findById(any());
         }
 
         @Test
-        @DisplayName("contains all possible data")
-        public void updatingPersistedMessageWithAllData(){
-            // Prepare data
-            UUID tempId = UUID.randomUUID();
-            Date tempSentDate = new Date();
-            Date tempDeliveryDate = new Date();
-            Date tempReadDate = new Date();
-            // Create new message object to imitate updated message
-            Message tempMessage = new Message();
-            tempMessage.setId(tempId);
-            tempMessage.setSentDate(tempSentDate);
-            tempMessage.setDeliveryDate(tempDeliveryDate);
-            tempMessage.setReadDate(tempReadDate);
-            // Set
-            testMessage.setId(tempId);
+        @DisplayName("returns INCORRECT_ID when the message with the given UUID does not exists")
+        void returnsIncorrectIdWhenTheMessageWithTheGivenUuidDoesNotExists() {
+            String validUuid = UUID.randomUUID().toString();
+            when(messageRepository.findById(any())).thenReturn(Optional.empty());
 
-            when(messageRepository.findById(testMessage.getId()))
-                    .thenReturn(Optional.ofNullable(testMessage));
-            messageService.updateMessage(testMessage.getSourceUserId(), tempMessage);
+            ServiceResponse<?> serviceResponse = messageService.deleteMessage(testMessageAuthorUuid, validUuid);
 
-            verify(messageRepository).save(testMessage);
-            assertThat(messageRepository.findById(tempId).get().getId()).isEqualTo(tempId);
-            assertThat(messageRepository.findById(tempId).get().getSentDate()).isEqualTo(tempSentDate);
-            assertThat(messageRepository.findById(tempId).get().getDeliveryDate()).isEqualTo(tempDeliveryDate);
-            assertThat(messageRepository.findById(tempId).get().getReadDate()).isEqualTo(tempReadDate);
+            assertThat(serviceResponse).isEqualTo(ServiceResponse.INCORRECT_ID);
+        }
+
+        @Test
+        @DisplayName("returns UNAUTHORIZED when the message author's UUID is different than the requesting user's UUID")
+        void returnsUnauthorizedWhenTheMessageAuthorSUuidIsDifferentThanTheRequestingUserSUuid() {
+            when(messageRepository.findById(testMessage.getId())).thenReturn(Optional.of(testMessage));
+
+            ServiceResponse<?> serviceResponse = messageService.deleteMessage(UUID.randomUUID(), testMessage.getId());
+
+            assertThat(serviceResponse).isEqualTo(ServiceResponse.UNAUTHORIZED);
+        }
+
+        @Test
+        @DisplayName("returns UNAUTHORIZED when the conversationService returns UNAUTHORIZED")
+        void returnsUnauthorizedWhenTheConversationServiceReturnsUnauthorized() {
+            Conversation conversation = new Conversation();
+            conversation.setId(UUID.randomUUID());
+            testMessage.setConversation(conversation);
+            when(messageRepository.findById(testMessage.getId())).thenReturn(Optional.of(testMessage));
+            doReturn(ServiceResponse.UNAUTHORIZED).when(conversationService).getById(any(UUID.class), any(UUID.class));
+
+            ServiceResponse<?> serviceResponse = messageService.deleteMessage(testMessageAuthorUuid, testMessage.getId());
+
+            assertThat(serviceResponse).isEqualTo(ServiceResponse.UNAUTHORIZED);
+        }
+
+        @Test
+        @DisplayName("returns OK when the conversationService returns the message's Conversation")
+        void returnsOkWhenTheConversationServiceReturnsTheMessageSConversation() {
+            Conversation conversation = new Conversation();
+            conversation.setId(UUID.randomUUID());
+            testMessage.setConversation(conversation);
+            when(messageRepository.findById(testMessage.getId())).thenReturn(Optional.of(testMessage));
+            ServiceResponse<Conversation> conversationServiceResponse = new ServiceResponse<>(conversation, HttpStatus.OK);
+            doReturn(conversationServiceResponse).when(conversationService).getById(any(UUID.class), any(UUID.class));
+
+            ServiceResponse<?> serviceResponse = messageService.deleteMessage(testMessageAuthorUuid, testMessage.getId());
+
+            assertThat(serviceResponse).isEqualTo(ServiceResponse.OK);
+            verify(messageRepository).deleteById(any());
+        }
+
+        // TODO: integration test(???) - check if the persistent conversation does not contain the message after removing it
+        @Test
+        @DisplayName("removes the Message from the Conversation")
+        void removesTheMessageFromTheConversation() {
+
         }
     }
-
 }
