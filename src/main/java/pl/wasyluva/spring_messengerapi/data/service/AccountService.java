@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.wasyluva.spring_messengerapi.data.repository.AccountRepository;
 import pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponse;
@@ -31,7 +30,7 @@ public class AccountService implements UserDetailsService {
     }
 
     @Override
-    public Account loadUserByUsername(String email) throws UsernameNotFoundException {
+    public Account loadUserByUsername(@NonNull String email) throws UsernameNotFoundException {
         Optional<Account> byEmail = accountRepository.findByEmail(email);
         if (!byEmail.isPresent()){
             log.debug("Account with email " + email + " does not exist");
@@ -73,7 +72,7 @@ public class AccountService implements UserDetailsService {
 
     // TODO: Add method createAdminAccount()
 
-    public ServiceResponse<?> deleteAccount(UUID requestingUserUuid){
+    public ServiceResponse<?> deleteAccount(@NonNull UUID requestingUserUuid){
         Optional<Account> byId = accountRepository.findById(requestingUserUuid);
         if (!byId.isPresent()){
             return ServiceResponse.INCORRECT_ID;
@@ -82,7 +81,7 @@ public class AccountService implements UserDetailsService {
         return ServiceResponse.OK;
     }
 
-    public ServiceResponse<?> deleteAccount(String requestingUserStringUuid){
+    public ServiceResponse<?> deleteAccount(@NonNull String requestingUserStringUuid){
         if (!UuidUtils.isStringCorrectUuid(requestingUserStringUuid)){
             return ServiceResponse.INCORRECT_ID;
         }

@@ -39,7 +39,7 @@ public class ProfileService {
         return new ServiceResponse<>(byId.get(), HttpStatus.OK);
     }
 
-    public ServiceResponse<?> getProfileById(String profileStringUuid){
+    public ServiceResponse<?> getProfileById(@NonNull String profileStringUuid){
         if (!UuidUtils.isStringCorrectUuid(profileStringUuid)){
             return ServiceResponse.INCORRECT_ID;
         }
@@ -66,7 +66,7 @@ public class ProfileService {
     }
 
     // TODO: Add a requestingUser parameter to the method and check if he is the owner of the profile
-    public ServiceResponse<?> updateProfile(UUID requestingProfileUuid, Profile updatedProfile){
+    public ServiceResponse<?> updateProfile(@NonNull UUID requestingProfileUuid, @NonNull Profile updatedProfile){
         if (updatedProfile.getId() == null){
             log.debug("UserProfile provided as updated has to have an ID");
             return ServiceResponse.INCORRECT_ID;

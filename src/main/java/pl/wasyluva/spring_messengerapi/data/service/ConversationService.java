@@ -1,5 +1,6 @@
 package pl.wasyluva.spring_messengerapi.data.service;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,7 @@ import static pl.wasyluva.spring_messengerapi.data.service.support.ServiceRespon
 public class ConversationService {
     private final ConversationRepository conversationRepository;
 
-    public ServiceResponse<?> getById(UUID requestingProfileUuid, UUID conversationUuid){
+    public ServiceResponse<?> getById(@NonNull UUID requestingProfileUuid, @NonNull UUID conversationUuid){
         Optional<Conversation> optionalConversationById = conversationRepository.findById(conversationUuid);
         if (!optionalConversationById.isPresent()){
             DebugLogger.logObjectNotFound(conversationUuid.toString());
@@ -41,7 +42,7 @@ public class ConversationService {
                 HttpStatus.OK);
     }
 
-    public ServiceResponse<?> getById(UUID requestingProfileUuid, String conversationUuidString){
+    public ServiceResponse<?> getById(@NonNull UUID requestingProfileUuid, @NonNull String conversationUuidString){
         if (!UuidUtils.isStringCorrectUuid(conversationUuidString)) {
             DebugLogger.logInvalidUuidAsString(conversationUuidString);
             return ServiceResponse.INCORRECT_ID;
@@ -49,7 +50,7 @@ public class ConversationService {
         return getById(requestingProfileUuid, UUID.fromString(conversationUuidString));
     }
 
-    public ServiceResponse<?> createConversation(UUID requestingProfileUuid, Collection<Profile> participators){
+    public ServiceResponse<?> createConversation(@NonNull UUID requestingProfileUuid, @NonNull Collection<Profile> participators){
         Set<Profile> participatorIdsWithoutDuplicates = new HashSet<>(participators);
 
         // check if the Conversation contains any participator
@@ -94,7 +95,7 @@ public class ConversationService {
      * log and continues its work without any more actions specific for the case. The log message contains
      * all IDs of the Conversation objects that contain the same participators.
      **/
-    private Conversation getConversationWithExactParticipators(Collection<Conversation> conversations, Collection<UUID> participatorIds) {
+    private Conversation getConversationWithExactParticipators(@NonNull Collection<Conversation> conversations, @NonNull Collection<UUID> participatorIds) {
         Set<Conversation> conversationsWithoutDuplicates = new HashSet<>(conversations);
         Set<UUID> participatorIdsWithoutDuplicates = new HashSet<>(participatorIds);
 
@@ -121,7 +122,7 @@ public class ConversationService {
             return null; }
     }
 
-    public ServiceResponse<?> addMessageToConversationById(UUID requestingProfileUuid, UUID conversationId, Message messageToAdd) {
+    public ServiceResponse<?> addMessageToConversationById(@NonNull UUID requestingProfileUuid, @NonNull UUID conversationId, @NonNull Message messageToAdd) {
         ServiceResponse<?> conversationServiceResponseById = getById(requestingProfileUuid, conversationId);
 
         // check if the response contains a Conversation object
@@ -154,7 +155,7 @@ public class ConversationService {
                 HttpStatus.CREATED);
     }
 
-    public ServiceResponse<?> addMessageToConversationById(UUID requestingProfileUuid, String conversationStringUuid, Message messageToPersist) {
+    public ServiceResponse<?> addMessageToConversationById(@NonNull UUID requestingProfileUuid, @NonNull String conversationStringUuid, @NonNull Message messageToPersist) {
         if (!UuidUtils.isStringCorrectUuid(conversationStringUuid)){
             return ServiceResponse.INCORRECT_ID;
         }
@@ -166,7 +167,7 @@ public class ConversationService {
     //  if true -> remove conversation;
     //  else -> add Profile the to Conversation's list of Profiles that have requested deletion;
     //  Tests then...
-    public ServiceResponse<?> deleteConversationById(UUID requestingProfileUuid, UUID conversationId) {
+    public ServiceResponse<?> deleteConversationById(@NonNull UUID requestingProfileUuid, @NonNull UUID conversationId) {
         ServiceResponse<?> byId = getById(requestingProfileUuid, conversationId);
 
         // check if the response contains a Conversation object
@@ -179,7 +180,7 @@ public class ConversationService {
         return new ServiceResponse<>(OK, HttpStatus.OK);
     }
 
-    public ServiceResponse<?> deleteConversationById(UUID requestingProfileUuid, String conversationUuidString) {
+    public ServiceResponse<?> deleteConversationById(@NonNull UUID requestingProfileUuid, @NonNull String conversationUuidString) {
         // check if the UUID is correct
         if (!UuidUtils.isStringCorrectUuid(conversationUuidString)){
             return ServiceResponse.INCORRECT_ID;
