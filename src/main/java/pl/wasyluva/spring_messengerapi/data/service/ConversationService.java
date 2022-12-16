@@ -155,9 +155,9 @@ public class ConversationService {
         }
 
         // save and return the Message
-        Conversation savedConversation = conversationRepository.save(conversation);
+        conversationRepository.save(conversation);
         return new ServiceResponse<>(
-                savedConversation,
+                messageToAdd,
                 HttpStatus.CREATED);
     }
 
