@@ -21,8 +21,6 @@ public class ProfileAvatar {
     private static final String DEFAULT_AVATAR_URL = "https://example.com/messenger/api/images/avatars/default";
     public static final ProfileAvatar DEFAULT_AVATAR = new ProfileAvatar(DEFAULT_AVATAR_URL);
     @Id
-//    @GeneratedValue(generator = "avatar_id_generator")
-//    @GenericGenerator(name = "avatar_id_generator", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID id = UUID.randomUUID();
 
     @NotNull

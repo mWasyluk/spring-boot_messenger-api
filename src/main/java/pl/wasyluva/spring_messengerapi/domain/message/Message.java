@@ -5,7 +5,6 @@ import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -20,9 +19,7 @@ import java.util.UUID;
 @Table(name = "messages")
 public class Message implements Comparable<Message> {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "messages_uuid_generator")
-    @GenericGenerator(name = "messages_uuid_generator", strategy = "org.hibernate.id.UUIDGenerator")
-    private UUID id;
+    private UUID id = UUID.randomUUID();
 
     @ManyToOne (optional = false)
     @JsonIgnoreProperties({"participators"})

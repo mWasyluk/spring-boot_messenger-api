@@ -3,8 +3,6 @@ package pl.wasyluva.spring_messengerapi.domain.message;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
 import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
 
 import javax.persistence.*;
@@ -16,9 +14,7 @@ import java.util.*;
 @Table(name = "conversations")
 public class Conversation {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "conversation_uuid_generator")
-    @GenericGenerator(name = "conversation_uuid_generator", strategy = "org.hibernate.id.UUIDGenerator")
-    private UUID id;
+    private UUID id = UUID.randomUUID();
     @OneToMany(cascade = {CascadeType.ALL}, orphanRemoval = true)
     @ElementCollection(targetClass = Message.class)
     @JoinTable(name = "conversation_messages")
