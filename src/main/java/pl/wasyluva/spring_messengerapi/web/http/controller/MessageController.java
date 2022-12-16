@@ -1,4 +1,4 @@
-package pl.wasyluva.spring_messengerapi.web.controller;
+package pl.wasyluva.spring_messengerapi.web.http.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.wasyluva.spring_messengerapi.data.service.ConversationService;
 import pl.wasyluva.spring_messengerapi.data.service.MessageService;
 import pl.wasyluva.spring_messengerapi.domain.message.Message;
-import pl.wasyluva.spring_messengerapi.web.controller.support.PrincipalService;
+import pl.wasyluva.spring_messengerapi.web.http.support.PrincipalService;
 
 import java.util.Date;
 

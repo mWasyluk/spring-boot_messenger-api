@@ -1,4 +1,4 @@
-package pl.wasyluva.spring_messengerapi.web.controller.support;
+package pl.wasyluva.spring_messengerapi.web.http.support;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

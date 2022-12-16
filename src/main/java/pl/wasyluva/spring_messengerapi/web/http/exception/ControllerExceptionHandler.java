@@ -1,4 +1,4 @@
-package pl.wasyluva.spring_messengerapi.web.controller.exception;
+package pl.wasyluva.spring_messengerapi.web.http.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

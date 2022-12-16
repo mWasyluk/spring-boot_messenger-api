@@ -1,4 +1,4 @@
-package pl.wasyluva.spring_messengerapi.web.controller;
+package pl.wasyluva.spring_messengerapi.web.http.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

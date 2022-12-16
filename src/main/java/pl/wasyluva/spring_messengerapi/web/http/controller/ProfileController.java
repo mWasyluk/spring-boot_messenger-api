@@ -1,10 +1,10 @@
-package pl.wasyluva.spring_messengerapi.web.controller;
+package pl.wasyluva.spring_messengerapi.web.http.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.wasyluva.spring_messengerapi.data.service.ProfileService;
 import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
-import pl.wasyluva.spring_messengerapi.web.controller.support.PrincipalService;
+import pl.wasyluva.spring_messengerapi.web.http.support.PrincipalService;
 
 @RestController
 @RequestMapping("/profiles")

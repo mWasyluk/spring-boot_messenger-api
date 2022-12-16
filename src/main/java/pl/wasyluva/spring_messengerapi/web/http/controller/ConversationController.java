@@ -1,4 +1,4 @@
-package pl.wasyluva.spring_messengerapi.web.controller;
+package pl.wasyluva.spring_messengerapi.web.http.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -8,7 +8,7 @@ import pl.wasyluva.spring_messengerapi.data.service.ProfileService;
 import pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponse;
 import pl.wasyluva.spring_messengerapi.domain.message.Conversation;
 import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
-import pl.wasyluva.spring_messengerapi.web.controller.support.PrincipalService;
+import pl.wasyluva.spring_messengerapi.web.http.support.PrincipalService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,7 +22,7 @@ public class ConversationController {
     private final ProfileService profileService;
     private final PrincipalService principalService;
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<?> getAllConversations(){
         return conversationService.getAll().getResponseEntity();
     }
