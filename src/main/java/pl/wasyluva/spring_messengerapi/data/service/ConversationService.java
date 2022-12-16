@@ -50,6 +50,12 @@ public class ConversationService {
         return getById(requestingProfileUuid, UUID.fromString(conversationUuidString));
     }
 
+    public ServiceResponse<?> getAllConversationsByParticipator(@NonNull UUID requestingProfileUuid){
+        List<Conversation> allByParticipatorId = conversationRepository.findAllByParticipatorsId(requestingProfileUuid);
+
+        return new ServiceResponse<>(allByParticipatorId, HttpStatus.OK);
+    }
+
     public ServiceResponse<?> createConversation(@NonNull UUID requestingProfileUuid, @NonNull Collection<Profile> participators){
         Set<Profile> participatorIdsWithoutDuplicates = new HashSet<>(participators);
 

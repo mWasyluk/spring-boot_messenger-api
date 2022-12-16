@@ -27,6 +27,13 @@ public class ConversationController {
         return conversationService.getAll().getResponseEntity();
     }
 
+    @GetMapping
+    public ResponseEntity<?> getAllParticipatorConversations(){
+        return conversationService.getAllConversationsByParticipator(
+                    principalService.getPrincipalProfileId())
+                .getResponseEntity();
+    }
+
     @GetMapping("/{conversationIdAsString}")
     public ResponseEntity<?> getConversationById(@PathVariable String conversationIdAsString){
         return conversationService.getById(

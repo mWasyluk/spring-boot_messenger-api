@@ -10,4 +10,5 @@ import java.util.UUID;
 @Repository
 public interface ConversationRepository extends JpaRepository<Conversation, UUID> {
     List<Conversation> findByParticipatorsIdIn(List<UUID> participatorsId);
+    List<Conversation> findAllByParticipatorsId(UUID participatorId);
 }
