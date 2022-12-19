@@ -14,6 +14,7 @@ import pl.wasyluva.spring_messengerapi.data.service.MessageService;
 import pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponse;
 import pl.wasyluva.spring_messengerapi.domain.message.Message;
 import pl.wasyluva.spring_messengerapi.web.http.support.PrincipalService;
+import pl.wasyluva.spring_messengerapi.web.websocket.MessagingTemplate;
 
 import java.util.Date;
 
@@ -28,7 +29,7 @@ public class MessageController {
     private final MessageService messageService;
     private final ConversationService conversationService;
     private final PrincipalService principalService;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final MessagingTemplate messagingTemplate;
 
     // TODO: Remove after tests
     @GetMapping
@@ -51,8 +52,8 @@ public class MessageController {
         if (serviceResponse.getBody() instanceof Message) {
             Message persistentMessage = (Message) serviceResponse.getBody();
             ObjectMapper mapper = new ObjectMapper();
-            messagingTemplate.convertAndSend(
-                    "/topic/" + persistentMessage.getConversation().getId(),
+            messagingTemplate.sendToAllParticipatorsOf(
+                    persistentMessage.getConversation().getId(),
                     mapper.writeValueAsString(persistentMessage));
         }
 
@@ -62,13 +63,12 @@ public class MessageController {
     @GetMapping("/conversation/{conversationIdAsString}")
     public ResponseEntity<?> getMessagesByConversationId (@PathVariable String conversationIdAsString,
                                                           @RequestParam(name = "page", defaultValue = "0") Integer page){
-        int pageSize = 15;
+        int pageSize = 30;
 
         return messageService.getAllMessagesByConversationId(
                 principalService.getPrincipalProfileId(),
                 conversationIdAsString,
-                PageRequest.of(page, pageSize)
-                        .withSort(Sort.by("sentDate").descending()))
+                PageRequest.of(page, pageSize))
                 .getResponseEntity();
     }
 
