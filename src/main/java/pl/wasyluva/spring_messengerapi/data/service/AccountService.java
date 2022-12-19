@@ -40,6 +40,16 @@ public class AccountService implements UserDetailsService {
         return byEmail.get();
     }
 
+    // TODO: test
+    public ServiceResponse<?> getAccountById(@NonNull UUID requestingAccountUuid){
+        Optional<Account> byId = accountRepository.findById(requestingAccountUuid);
+        if (!byId.isPresent()){
+            return ServiceResponse.INCORRECT_ID;
+        }
+
+        return new ServiceResponse<>(byId.get(), HttpStatus.OK);
+    }
+
     public ServiceResponse<?> createAccount(@NonNull Account.AccountRegistrationForm form){
         Account account = new Account(form.getEmail(), form.getPassword());
 

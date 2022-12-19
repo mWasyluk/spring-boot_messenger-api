@@ -20,9 +20,14 @@ public class AccountController {
     private final PrincipalService principalService;
 
     // TODO: Remove after tests
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<?> getAllAccounts(){
         return accountService.getAllAccounts().getResponseEntity();
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getAccount(){
+        return accountService.getAccountById(principalService.getPrincipalAccountId()).getResponseEntity();
     }
 
     @PostMapping("/register")
