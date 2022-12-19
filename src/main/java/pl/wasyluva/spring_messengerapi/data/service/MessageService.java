@@ -12,8 +12,7 @@ import pl.wasyluva.spring_messengerapi.domain.message.Conversation;
 import pl.wasyluva.spring_messengerapi.domain.message.Message;
 import pl.wasyluva.spring_messengerapi.util.UuidUtils;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @RequiredArgsConstructor
 
@@ -98,7 +97,6 @@ public class MessageService {
 
     }
 
-    // TODO: Fix pageable
     // TODO: Test pageable
     public ServiceResponse<?> getAllMessagesByConversationId(@NonNull UUID requestingProfileId, @NonNull UUID conversationId, @NonNull Pageable pageable) {
         ServiceResponse<?> conversationServiceResponse = conversationService.getById(requestingProfileId, conversationId);
@@ -106,8 +104,10 @@ public class MessageService {
             return conversationServiceResponse;
         }
 
+        List<Message> messages = messageRepository.findAllByConversationIdOrderBySentDateDesc(conversationId, pageable);
+
         return new ServiceResponse<>(
-                ((Conversation)conversationServiceResponse.getBody()).getMessages(),
+                messages,
                 HttpStatus.OK);
     }
 
