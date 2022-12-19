@@ -25,13 +25,16 @@ import java.util.UUID;
 @Table(name = "USERS")
 public class Account implements UserDetails {
     @Id
+    @JsonIgnore
     private UUID id = UUID.randomUUID();
 
     @Column(unique = true)
+    @JsonIgnore
     private String email;
+    @JsonIgnore
     private String password;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.DETACH})
     @JoinColumn(name = "profile_id", unique = true)
     @JsonIgnoreProperties("account")
     private Profile profile;
@@ -40,11 +43,15 @@ public class Account implements UserDetails {
     @JoinTable(name = "AUTHORITIES", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "authority", nullable = false)
     @Enumerated(EnumType.STRING)
+    @JsonIgnore
     private Collection<? extends GrantedAuthority> authorities;
-
+    @JsonIgnore
     private boolean accountNonExpired;
+    @JsonIgnore
     private boolean accountNonLocked;
+    @JsonIgnore
     private boolean credentialsNonExpired;
+    @JsonIgnore
     private boolean enabled;
 
     public Account(@NonNull String email, @NonNull String password) {
