@@ -23,8 +23,9 @@ public class SecurityConfig {
         http
                 .csrf().disable()
                 .authorizeHttpRequests((auth) -> auth
-                        .antMatchers("/").permitAll()
+                        .antMatchers("/", "/ouroom/**").permitAll()
                         .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .antMatchers(HttpMethod.POST, "/accounts/register").permitAll()
                         .anyRequest().authenticated()
                 )
 
