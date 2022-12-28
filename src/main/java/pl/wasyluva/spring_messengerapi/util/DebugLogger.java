@@ -19,6 +19,11 @@ public class DebugLogger {
         log.debug(message);
     }
 
+    public static void logObjectNotFoundByName(String name){
+        String message = String.format("Object '%s' could not be found", name);
+        log.debug(message);
+    }
+
     public static void logSuccess() {
         log.debug("The operation has been completed successfully");
     }

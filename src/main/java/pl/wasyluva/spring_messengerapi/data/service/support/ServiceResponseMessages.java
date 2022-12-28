@@ -20,4 +20,5 @@ public interface ServiceResponseMessages {
     String ACCOUNT_PROFILE_ALREADY_EXISTS = "Konto ma już utworzony profil";
     String INCORRECT_OBJECT_PROVIDED = "Przesłany obiekt jest niepoprawny";
     String ID_NOT_FOUND = "Przesłany identyfikator nie został odnaleziony";
+    String NOT_FOUND_ENTITY = "Obiekt nie został odnaleziony";
 }

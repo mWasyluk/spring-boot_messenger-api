@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 
 public class ServiceResponse<T> extends ResponseEntity<T> {
     public static final ServiceResponse<String> INCORRECT_ID = new ServiceResponse<>(ServiceResponseMessages.EXISTING_ID_REQUIRED, HttpStatus.NOT_FOUND);
+    public static final ServiceResponse<String> NOT_FOUND = new ServiceResponse<>(ServiceResponseMessages.NOT_FOUND_ENTITY, HttpStatus.NOT_FOUND);
     public static final ServiceResponse<String> UNAUTHORIZED = new ServiceResponse<>(ServiceResponseMessages.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
     public static final ServiceResponse<String> OK = new ServiceResponse<>(ServiceResponseMessages.OK, HttpStatus.OK);
 
