@@ -24,7 +24,13 @@ public class PrincipalService {
 
     public UUID getPrincipalProfileId(){
         Optional<Account> byId = accountRepository.findById(getPrincipalAccountId());
-        return byId.map( account -> account.getProfile().getId()).orElse(null);
+        if (!byId.isPresent()){
+            return null;
+        }
+        if (byId.get().getProfile() == null){
+            return null;
+        }
+        return byId.get().getProfile().getId();
     }
 
 }

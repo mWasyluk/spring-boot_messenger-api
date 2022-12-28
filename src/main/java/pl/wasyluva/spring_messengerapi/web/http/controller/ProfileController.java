@@ -19,9 +19,15 @@ public class ProfileController {
         this.principalService = principalService;
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<?> getAllUserProfiles(){
         return profileService.getAllProfiles().getResponseEntity();
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getPrincipalProfile(){
+        return profileService.getProfileByAccountId(principalService.getPrincipalAccountId())
+                .getResponseEntity();
     }
 
     @GetMapping("/{userUuid}")
@@ -39,6 +45,12 @@ public class ProfileController {
     @PatchMapping("/update")
     public ResponseEntity<?> updateUserProfile(@RequestBody Profile profile){
         return profileService.updateProfile(principalService.getPrincipalProfileId(), profile)
+                .getResponseEntity();
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteProfile(){
+        return profileService.deleteProfile(principalService.getPrincipalAccountId())
                 .getResponseEntity();
     }
 }
