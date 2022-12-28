@@ -1,11 +1,13 @@
 package pl.wasyluva.spring_messengerapi.web.http.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.wasyluva.spring_messengerapi.data.service.ProfileService;
 import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
 import pl.wasyluva.spring_messengerapi.web.http.support.PrincipalService;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/profiles")
 public class ProfileController {
@@ -13,11 +15,6 @@ public class ProfileController {
 
     private final ProfileService profileService;
     private final PrincipalService principalService;
-
-    public ProfileController(ProfileService profileService, PrincipalService principalService) {
-        this.profileService = profileService;
-        this.principalService = principalService;
-    }
 
     @GetMapping("/all")
     public ResponseEntity<?> getAllUserProfiles(){
@@ -33,6 +30,12 @@ public class ProfileController {
     @GetMapping("/{userUuid}")
     public ResponseEntity<?> getUserProfileByUserId(@PathVariable String userUuid){
         return profileService.getProfileById(userUuid)
+                .getResponseEntity();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchProfilesByName(@RequestParam(name = "q") String query){
+        return profileService.getProfilesByNameQuery(query)
                 .getResponseEntity();
     }
 

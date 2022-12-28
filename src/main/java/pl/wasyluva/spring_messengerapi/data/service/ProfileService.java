@@ -4,7 +4,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import pl.wasyluva.spring_messengerapi.data.repository.AccountRepository;
 import pl.wasyluva.spring_messengerapi.data.repository.ProfileRepository;
@@ -15,8 +14,8 @@ import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
 import pl.wasyluva.spring_messengerapi.util.DebugLogger;
 import pl.wasyluva.spring_messengerapi.util.UuidUtils;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -127,5 +126,24 @@ public class ProfileService {
         this.accountRepository.save(accountOptional.get());
 
         return ServiceResponse.OK;
+    }
+
+    public ServiceResponse<Object> getProfilesByNameQuery(@NonNull String query) {
+        List<String> wordsInQuery = new ArrayList<>(Arrays.asList(query.trim().split(" ")));
+
+        if (wordsInQuery.size() < 1) {
+            wordsInQuery.addAll(Arrays.asList("", ""));
+        } else if (wordsInQuery.size() < 2 ) {
+            wordsInQuery.add("");
+        }
+
+        List<Profile> profilesByQuery = this.profileRepository.findAllByFirstNameStartsWithIgnoreCaseAndLastNameStartsWithIgnoreCase(wordsInQuery.get(0), wordsInQuery.get(1));
+        List<Profile> profilesByQueryReverse = this.profileRepository.findAllByFirstNameStartsWithIgnoreCaseAndLastNameStartsWithIgnoreCase(wordsInQuery.get(1), wordsInQuery.get(0));
+
+        Set<Profile> profiles = new HashSet<>(profilesByQuery);
+        profiles.addAll(profilesByQueryReverse);
+        List<Profile> sortedProfiles = profiles.stream().sorted(Comparator.comparing(Profile::getLastName)).collect(Collectors.toList());
+
+        return new ServiceResponse<>(sortedProfiles, HttpStatus.OK);
     }
 }
