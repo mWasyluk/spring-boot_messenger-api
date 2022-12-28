@@ -25,7 +25,6 @@ import java.util.UUID;
 @Table(name = "USERS")
 public class Account implements UserDetails {
     @Id
-    @JsonIgnore
     private UUID id = UUID.randomUUID();
 
     @Column(unique = true)

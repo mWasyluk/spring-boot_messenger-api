@@ -2,15 +2,19 @@ package pl.wasyluva.spring_messengerapi.domain.userdetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.deser.std.DateDeserializers;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.format.datetime.DateFormatter;
+import pl.wasyluva.spring_messengerapi.domain.message.Conversation;
 
 import javax.persistence.*;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -19,10 +23,9 @@ import java.util.UUID;
 @AllArgsConstructor
 
 @Entity
-// TODO: Change to "profiles"
-@Table(name = "user_profiles")
+@Table(name = "profiles")
 public class Profile {
-    private static DateFormatter dateFormatter = new DateFormatter("dd-MM-yyyy");
+    private static DateFormatter dateFormatter = new DateFormatter("yyyy-MM-dd");
     public static DateFormatter getBirthDateFormatter(){
         return dateFormatter;
     }
@@ -36,17 +39,31 @@ public class Profile {
     @JsonIgnore
     private Account account;
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "participators_conversations")
+    @JsonIgnore
+    private List<Conversation> conversations;
+
     @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
     @JoinColumn(name = "avatar_id", referencedColumnName = "id")
     private ProfileAvatar avatar = null;
 
     @Temporal(TemporalType.DATE)
+    @JsonDeserialize(using = DateDeserializers.CalendarDeserializer.class)
     private Date birthDate;
 
     public Profile(String firstName, String lastName, Date birthDate) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.birthDate = birthDate;
+    }
+
+    public void addConversation(Conversation conversation) {
+        this.conversations.add(conversation);
+    }
+
+    public void removeConversation(Conversation conversation){
+        this.conversations.removeIf(conv -> conv.getId().equals(conversation.getId()));
     }
 
     public ProfileAvatar getAvatar() {
@@ -57,15 +74,17 @@ public class Profile {
 
     @JsonProperty("birthdate")
     public String getBirthDateAsString(){
-        return dateFormatter.print(birthDate, Locale.getDefault());
+        if (birthDate != null)
+            return dateFormatter.print(birthDate, Locale.getDefault());
+        return "";
     }
 
     @JsonIgnore
-//    @Transient
     public Date getBirthDate() {
         return this.birthDate;
     }
 
+    @JsonDeserialize()
     public void setBirthDate(String ddmmyyyy){
         String[] split = ddmmyyyy.split("-");
         try {
@@ -75,7 +94,4 @@ public class Profile {
         }
     }
 
-    public void setBirthDate(Date birthDate){
-        this.birthDate = birthDate;
-    }
 }

@@ -3,6 +3,7 @@ package pl.wasyluva.spring_messengerapi.domain.message;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import lombok.NonNull;
 import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
 
 import javax.persistence.*;
@@ -20,8 +21,8 @@ public class Conversation {
     @JoinTable(name = "conversation_messages")
     @JsonIgnore
     private List<Message> messages;
+
     @ManyToMany
-    @JoinTable(name = "conversation_participators")
     @JsonIgnoreProperties({"birthDate"})
     private List<Profile> participators;
 
@@ -33,6 +34,11 @@ public class Conversation {
     public Conversation(List<Profile> participators) {
         this.messages = new ArrayList<>();
         this.participators = new ArrayList<>(participators);
+    }
+
+    public void addParticipators(@NonNull Collection<Profile> profiles){
+        profiles.forEach(profile -> profile.addConversation(this));
+        this.participators.addAll(profiles);
     }
 
     public boolean addMessage(Message message){

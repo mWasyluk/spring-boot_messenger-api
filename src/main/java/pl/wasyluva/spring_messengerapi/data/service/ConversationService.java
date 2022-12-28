@@ -88,7 +88,9 @@ public class ConversationService {
         }
 
         // save and return the Conversation
-        Conversation savedConversation = conversationRepository.save(new Conversation(new ArrayList<>(participatorIdsWithoutDuplicates)));
+        Conversation savedConversation = conversationRepository.save(new Conversation());
+        savedConversation.addParticipators(participatorIdsWithoutDuplicates);
+        conversationRepository.save(savedConversation);
         return new ServiceResponse<>(
                 savedConversation,
                 HttpStatus.CREATED);
