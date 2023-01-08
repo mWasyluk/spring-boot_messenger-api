@@ -105,9 +105,7 @@ public class ProfileService {
     }
 
     private Profile updateAllProfileFields(@NonNull Profile oldState, @NonNull Profile updatedState){
-        if (updatedState.getAvatar() != null){
-            oldState.setAvatar(updatedState.getAvatar());
-        } if (updatedState.getFirstName() != null) {
+        if (updatedState.getFirstName() != null) {
             oldState.setFirstName(updatedState.getFirstName());
         } if (updatedState.getLastName() != null) {
             oldState.setLastName(updatedState.getLastName());

@@ -67,8 +67,6 @@ public class Profile {
     }
 
     public ProfileAvatar getAvatar() {
-        if (this.avatar == null)
-            return ProfileAvatar.DEFAULT_AVATAR;
         return avatar;
     }
 
