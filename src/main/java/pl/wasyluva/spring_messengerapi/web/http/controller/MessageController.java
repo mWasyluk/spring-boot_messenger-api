@@ -50,7 +50,7 @@ public class MessageController {
         if (serviceResponse.getBody() instanceof Message) {
             Message persistentMessage = (Message) serviceResponse.getBody();
             ObjectMapper mapper = new ObjectMapper();
-            messagingTemplate.sendToAllParticipatorsOf(
+            messagingTemplate.sendMessageToAllConversationParticipators(
                     persistentMessage.getConversation().getId(),
                     mapper.writeValueAsString(persistentMessage));
         }
