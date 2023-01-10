@@ -13,10 +13,7 @@ import pl.wasyluva.spring_messengerapi.domain.message.Conversation;
 
 import javax.persistence.*;
 import java.text.ParseException;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -42,7 +39,7 @@ public class Profile {
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "participators_conversations")
     @JsonIgnore
-    private List<Conversation> conversations;
+    private List<Conversation> conversations = new ArrayList<>();
 
     @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
     @JoinColumn(name = "avatar_id", referencedColumnName = "id")
