@@ -1,17 +1,12 @@
 package pl.wasyluva.spring_messengerapi.data.service;
 
-import org.assertj.core.api.Assertions;
-import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.wasyluva.spring_messengerapi.data.repository.ConversationRepository;
 import pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponse;
@@ -22,8 +17,8 @@ import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
 import pl.wasyluva.spring_messengerapi.util.UuidUtils;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -166,6 +161,7 @@ class ConversationServiceTest {
         @DisplayName("does not return UNAUTHORIZED when the requesting Profile is one of the participators")
         void doesNotReturnUnauthorizedWhenTheRequestingProfileIsOneOfTheParticipators(Profile participator) throws Exception {
             Collection<Profile> participators = new ArrayList<>(Arrays.asList(onlyUuid1(), onlyUuid2()));
+            when(conversationRepository.save(any())).thenReturn(new Conversation());
 
             ServiceResponse<?> serviceResponse = conversationService.createConversation(testParticipator1.getId(), participators);
 
@@ -198,6 +194,7 @@ class ConversationServiceTest {
         @DisplayName("does not return INVALID_PARTICIPATORS when the participators list contains one Profile")
         void doesNotReturnInvalidParticipatorsWhenTheParticipatorsListContainsOneProfile() throws Exception{
             Collection<Profile> participators = new ArrayList<>(Collections.singletonList(onlyUuid1()));
+            when(conversationRepository.save(any())).thenReturn(new Conversation());
 
             ServiceResponse<?> serviceResponse = conversationService.createConversation(testParticipator1.getId(), participators);
 
@@ -252,16 +249,21 @@ class ConversationServiceTest {
                         sConversations1and2andRandR,
                         sConversations1and2andR2andR2
                 ));
-                when(conversationRepository.save(any())).thenReturn(sConversations1and2);
+                Conversation conversation = new Conversation();
+                when(conversationRepository.save(any())).thenReturn(conversation).thenReturn(sConversations1and2);
                 Collection<Profile> participators = new ArrayList<>(Arrays.asList(onlyUuid1(), onlyUuid2()));
+                List<Profile> expectedConversationProfiles = sConversations1and2.getParticipators().stream()
+                        .peek(p -> p.addConversation(conversation))
+                        .collect(Collectors.toList());
 
                 ServiceResponse<?> serviceResponse = conversationService.createConversation(testParticipator1.getId(), participators);
 
                 assertThat(serviceResponse.getBody()).isInstanceOf(Conversation.class);
                 ArgumentCaptor<Conversation> conversationArgumentCaptor = ArgumentCaptor.forClass(Conversation.class);
-                verify(conversationRepository).save(conversationArgumentCaptor.capture());
-                assertThat(conversationArgumentCaptor.getValue().getParticipators())
-                        .containsExactlyInAnyOrderElementsOf(sConversations1and2.getParticipators());
+                verify(conversationRepository, times(2)).save(conversationArgumentCaptor.capture());
+                List<Conversation> allValues = conversationArgumentCaptor.getAllValues();
+                assertThat(allValues.get(1).getParticipators())
+                        .containsExactlyInAnyOrderElementsOf(expectedConversationProfiles);
             }
 
             @Test
@@ -377,7 +379,7 @@ class ConversationServiceTest {
                             testConversation.getId(),
                             testMessageFrom1);
 
-            assertThat(serviceResponse.getBody()).isEqualTo(testConversation);
+            assertThat(serviceResponse.getBody()).isEqualTo(testMessageFrom1);
         }
 
         @Test

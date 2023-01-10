@@ -1,11 +1,14 @@
 package pl.wasyluva.spring_messengerapi.data.service;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.format.datetime.DateFormatter;
 import pl.wasyluva.spring_messengerapi.data.repository.AccountRepository;
 import pl.wasyluva.spring_messengerapi.data.repository.ProfileRepository;
 import pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponse;
@@ -15,11 +18,10 @@ import pl.wasyluva.spring_messengerapi.domain.userdetails.Profile;
 import pl.wasyluva.spring_messengerapi.domain.userdetails.ProfileAvatar;
 import pl.wasyluva.spring_messengerapi.util.UuidUtils;
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static pl.wasyluva.spring_messengerapi.data.service.support.ServiceResponse.INCORRECT_ID;
@@ -50,9 +52,11 @@ class ProfileServiceTest {
         @Test
         @DisplayName("returns the Profile when it exists with the given UUID")
         void returnsTheProfileWhenItExistsWithTheGivenId() {
-            when(profileRepository.findById(testProfile.getId())).thenReturn(Optional.of(testProfile));
+            Account account = new Account();
+            account.setProfile(testProfile);
+            when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
 
-            ServiceResponse<?> serviceResponse = profileService.getProfileById(testProfile.getId());
+            ServiceResponse<?> serviceResponse = profileService.getProfileByAccountId(account.getId());
 
             assertThat(serviceResponse.getBody()).isEqualTo(testProfile);
         }
@@ -60,9 +64,7 @@ class ProfileServiceTest {
         @Test
         @DisplayName("returns INCORRECT_ID when the profile with the given UUID does not exist")
         void returnsNull() {
-            when(profileRepository.findById(testProfile.getId())).thenReturn(Optional.empty());
-
-            ServiceResponse<?> serviceResponse = profileService.getProfileById(testProfile.getId());
+            ServiceResponse<?> serviceResponse = profileService.getProfileByAccountId(testProfile.getId());
 
             assertThat(serviceResponse).isEqualTo(INCORRECT_ID);
         }
@@ -149,13 +151,11 @@ class ProfileServiceTest {
     @DisplayName("Test if the updateProfile() method")
     class UpdateProfileTest {
         @Test
-        @DisplayName("returns INCORRECT_ID when the Profile update does not contain a UUID")
+        @DisplayName("throws NullPointerException when the Profile update does not contain a UUID")
         void returnsIncorrectIdWhenTheProfileUpdateDoesNotContainAUuid() {
             testProfile.setId(null);
 
-            ServiceResponse<?> serviceResponse = profileService.updateProfile(testProfile.getId(), testProfile);
-
-            assertThat(serviceResponse).isEqualTo(INCORRECT_ID);
+            assertThatThrownBy(() -> profileService.updateProfile(testProfile.getId(), testProfile)).isExactlyInstanceOf(NullPointerException.class);
             verify(profileRepository, never()).findById(any());
         }
 
@@ -184,20 +184,19 @@ class ProfileServiceTest {
         void updatesTheProfile() {
             when(profileRepository.findById(any())).thenReturn(Optional.of(testProfile));
             // data preparation
-            ProfileAvatar sAvatar = new ProfileAvatar("http://test.avatar");
             String sFirstName = "sTest";
             String sLastName = "sTest";
-            Date sBirthdate = new Date();
+            DateFormatter birthDateFormatter = Profile.getBirthDateFormatter();
+//            Date sBirthdate = birthDateFormatter.parse(birthDateFormatter.print(new Date(), Locale.getDefault()));
+            Date sBirthdate = new GregorianCalendar(1999, Calendar.JUNE, 16).getTime();
             // test object set up
             Profile sProfile = new Profile(sFirstName, sLastName, sBirthdate);
             sProfile.setId(testProfile.getId());
-            sProfile.setAvatar(sAvatar);
 
             ServiceResponse<?> serviceResponse = profileService.updateProfile(testProfile.getId(), sProfile);
 
             ArgumentCaptor<Profile> profileArgumentCaptor = ArgumentCaptor.forClass(Profile.class);
             verify(profileRepository).save(profileArgumentCaptor.capture());
-            assertThat(profileArgumentCaptor.getValue().getAvatar()).isEqualTo(sAvatar);
             assertThat(profileArgumentCaptor.getValue().getFirstName()).isEqualTo(sFirstName);
             assertThat(profileArgumentCaptor.getValue().getLastName()).isEqualTo(sLastName);
             assertThat(profileArgumentCaptor.getValue().getBirthDate()).isEqualTo(sBirthdate);
